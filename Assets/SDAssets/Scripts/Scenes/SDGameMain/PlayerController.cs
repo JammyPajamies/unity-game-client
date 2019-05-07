@@ -278,6 +278,15 @@ namespace SD
         }
 
         /// <summary>
+        /// Returns the base max speed of the player.
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentSpeed()
+        {
+            return currentSpeedLimit;
+        }
+
+        /// <summary>
         /// Sets the base max speed of the player.
         /// </summary>
         /// <param name="newSpeedLimit"></param>

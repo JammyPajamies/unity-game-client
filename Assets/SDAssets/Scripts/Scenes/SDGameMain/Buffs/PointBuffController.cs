@@ -43,6 +43,7 @@ namespace SD
             {
                 // Add a stack of the buff, get the recalculated buff results.
                 ApplyBuff();
+                gameController.SetIsPointBuffActive(true);
             }
         }
 
@@ -50,15 +51,6 @@ namespace SD
         {
             // Round the point bonus to avoid truncation errors, then cast to int.
             gameController.SetPointBonusAmount((int)Math.Round(GetAdjustedStatAmount()));
-
-            if (GetBuffStackAmount() > 0)
-            {
-                gameController.SetIsPointBuffActive(true);
-            }
-            else
-            {
-                gameController.SetIsPointBuffActive(false);
-            }
         }
     }
 }

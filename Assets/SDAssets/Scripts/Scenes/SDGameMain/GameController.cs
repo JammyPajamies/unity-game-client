@@ -555,12 +555,12 @@ namespace SD {
 
         public bool getSpeedBoostStatus()
         {
-            return pointBoostOn;
+            return speedBoostOn;
         }
 
         public bool getEvasionBoostStatus()
         {
-            return pointBoostOn;
+            return evasionBoostOn;
         }
 
         public void SetPointBonusAmount(int bonus)

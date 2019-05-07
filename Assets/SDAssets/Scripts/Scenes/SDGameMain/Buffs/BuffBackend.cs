@@ -55,7 +55,7 @@ namespace SD
             if (Time.timeSinceLevelLoad > buffEndTime)
             {
                 adjustedStat = baseStat;
-                currentBuffBonus = initialBuffBonus;
+                currentBuffBonus = initialBuffBonus;                
             }
         }
 
@@ -175,6 +175,15 @@ namespace SD
         public void SetMaxBuffDuration(float duration)
         {
             maxBuffDuration = duration;
+        }
+
+        // <summary>
+        /// Getter for the maximum buff duration in seconds.
+        /// </summary>
+        /// <param name="duration"></param>
+        public float GetMaxBuffDuration()
+        {
+            return maxBuffDuration;
         }
 
         /// <summary>

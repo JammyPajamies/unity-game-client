@@ -24,7 +24,7 @@ namespace SD
         {
             player = gameObject.GetComponent<PlayerController>();
             gameController = GameController.getInstance();
-
+            
             SetBaseStat(player.GetBaseSpeed());
             SetMaxStackAmount(maxBuffStacks);
             SetMaxBuffDuration(buffDuration);
@@ -42,6 +42,7 @@ namespace SD
             {
                 // Add a stack of the buff, get the recalculated buff results.
                 player.SetCurrentSpeed(ApplyBuff());
+                gameController.SetIsSpeedBuffActive(true);
             }
         }
 
@@ -49,16 +50,7 @@ namespace SD
         {
             // Update the player's base speed and inform the game controller of
             // player's speed boost buff state.
-            player.SetCurrentSpeed(GetAdjustedStatAmount());
-
-            if(GetBuffStackAmount() > 0)
-            {
-                gameController.SetIsSpeedBuffActive(true);
-            }
-            else
-            {
-                gameController.SetIsSpeedBuffActive(false);
-            }
+            player.SetCurrentSpeed(GetAdjustedStatAmount()); 
         }
     }
 }
