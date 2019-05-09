@@ -50,7 +50,7 @@ namespace SD
             }
         }
 
-        void Update()
+        void LateUpdate()
         {
             // Round the point bonus to avoid truncation errors, then cast to int.
             gameController.SetPointBonusAmount((int)Math.Round(GetAdjustedStatAmount()));
