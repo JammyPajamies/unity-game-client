@@ -38,7 +38,7 @@ namespace SD {
         private float staminaBeginRecoverTime = 0.0f;
 
         public Boundary boundary;
-        public Rigidbody player;
+        public List<Rigidbody> playerPrefabs;
         public Rigidbody opponent;
         public Rigidbody playerBase;
         public Rigidbody opponentBase;
@@ -80,6 +80,8 @@ namespace SD {
         private bool speedBoostOn = false;
         private bool evasionBoostOn = false;
 
+        private bool slowDownOn = false;
+
         private int pointBonus = 0;
 
         Rigidbody playerClone;
@@ -94,7 +96,9 @@ namespace SD {
             if (Constants.PLAYER_NUMBER == 2) {  // The player who joins the host will have a different position to start from.
                 swapPositions();
             }
-            playerClone = (Rigidbody)Instantiate (player, playerInitialPosition, playerInitialRotation);
+            // Spawn the appropriate player based on the character selection screen.
+            playerClone = (Rigidbody)Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
+            
             Rigidbody playerBaseClone = (Rigidbody)Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
             Rigidbody opponentBaseClone = (Rigidbody)Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
             score = 0;
@@ -548,6 +552,11 @@ namespace SD {
             evasionBoostOn = active;
         }
 
+        public void SetIsSlowDownActive(bool active)
+        {
+            slowDownOn = active;
+        }
+
         public bool getPointBoostStatus()
         {
             return pointBoostOn;
@@ -557,6 +566,12 @@ namespace SD {
         {
             return speedBoostOn;
         }
+
+        public bool getSlowDownStatus()
+        {
+            return slowDownOn;
+        }
+
 
         public bool getEvasionBoostStatus()
         {
