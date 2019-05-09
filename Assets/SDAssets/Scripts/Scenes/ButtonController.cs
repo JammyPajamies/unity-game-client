@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,5 +23,10 @@ public class ButtonController : MonoBehaviour
     public void PlayButtonClickSound()
     {
         soundManagerObject.GetComponent<ButtonManager>().BtnPlayButtonClickSound();
+    }
+
+    public void PlaySceneTransitionSound()
+    {
+        soundManagerObject.GetComponent<ButtonManager>().BtnPlaySceneTransitionSound();
     }
 }
