@@ -44,7 +44,7 @@ ModelImporter:
     400036: default
     400038: //RootNode
     4300000: default
-    7400000: swim
+    7400000: JellyFishSwim
     11100000: //RootNode
     13700000: default
   externalObjects: {}
@@ -75,7 +75,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: swim
+      name: JellyFishSwim
       takeName: 
       firstFrame: 1
       lastFrame: 60

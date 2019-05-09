@@ -186,6 +186,15 @@ namespace SD
             return maxBuffDuration;
         }
 
+        // <summary>
+        /// Getter for the buff end time.
+        /// </summary>
+        /// <param name="duration"></param>
+        public float GetBuffEndTime()
+        {
+            return buffEndTime;
+        }
+
         /// <summary>
         /// Returns the number of stacks of the current buff.
         /// </summary>

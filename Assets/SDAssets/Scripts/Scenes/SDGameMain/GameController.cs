@@ -80,6 +80,8 @@ namespace SD {
         private bool speedBoostOn = false;
         private bool evasionBoostOn = false;
 
+        private bool slowDownOn = false;
+
         private int pointBonus = 0;
 
         Rigidbody playerClone;
@@ -548,6 +550,11 @@ namespace SD {
             evasionBoostOn = active;
         }
 
+        public void SetIsSlowDownActive(bool active)
+        {
+            slowDownOn = active;
+        }
+
         public bool getPointBoostStatus()
         {
             return pointBoostOn;
@@ -557,6 +564,12 @@ namespace SD {
         {
             return speedBoostOn;
         }
+
+        public bool getSlowDownStatus()
+        {
+            return slowDownOn;
+        }
+
 
         public bool getEvasionBoostStatus()
         {
