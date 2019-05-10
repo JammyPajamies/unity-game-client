@@ -6,8 +6,8 @@ namespace SD {
     public class SDPersistentData : MonoBehaviour {
 
         private int playerFinalScore;
-        // 0 = mackeral, 1 = striped bass, 2 = barracuda
-        private int playerFishSelectionIndex;
+        // -1 = error, 0 = mackeral, 1 = striped bass, 2 = barracuda
+        private int playerFishSelectionIndex = -1;
         private int roundsCompleted;
         private bool isGameCompleted;
         private int winningScore;

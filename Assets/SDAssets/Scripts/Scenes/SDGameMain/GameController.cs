@@ -97,8 +97,14 @@ namespace SD {
                 swapPositions();
             }
             // Spawn the appropriate player based on the character selection screen.
-            playerClone = (Rigidbody)Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
-            
+            if (FindObjectOfType<SDPersistentData>() != null)
+            {
+                playerClone = (Rigidbody)Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
+            }
+            else
+            {
+                playerClone = (Rigidbody)Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
+            }
             Rigidbody playerBaseClone = (Rigidbody)Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
             Rigidbody opponentBaseClone = (Rigidbody)Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
             score = 0;

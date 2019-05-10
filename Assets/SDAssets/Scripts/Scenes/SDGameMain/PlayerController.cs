@@ -68,8 +68,6 @@ namespace SD
         public string slowSpeedSwimStateName;
         public string normalSpeedSwimStateName;
         public string fastSpeedSwimStateName;
-        public string eatingStateName;
-        public string dyingStateName;
         private Animator fishAnimator;
 
         // Detects the player object, and reads the 'GameController' Object
@@ -103,7 +101,7 @@ namespace SD
             {
                 // Update stamina amount.
                 currentStamina = gameController.GetStamina();
-
+            
                 // Check to see if stamina boosting is possible.
                 if (!canBoost && currentStamina > minStaminaForBoost)
                 {
@@ -278,15 +276,6 @@ namespace SD
         }
 
         /// <summary>
-        /// Returns the base max speed of the player.
-        /// </summary>
-        /// <returns></returns>
-        public float GetCurrentSpeed()
-        {
-            return currentSpeedLimit;
-        }
-
-        /// <summary>
         /// Sets the base max speed of the player.
         /// </summary>
         /// <param name="newSpeedLimit"></param>
@@ -302,6 +291,24 @@ namespace SD
         public float GetAbsoluteMaxSpeedLimit()
         {
             return this.absoluteMaxSpeedLimit;
+        }
+
+        /// <summary>
+        /// Returns the current veolcity of the player.
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentSpeed()
+        {
+            return rb.velocity.magnitude;
+        }
+
+        /// <summary>
+        /// Returns the ratio of current to max speed. [0, 1] inclusive.
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentToMaxSpeedRatio()
+        {
+            return rb.velocity.magnitude / currentSpeedLimit;
         }
 
         #endregion

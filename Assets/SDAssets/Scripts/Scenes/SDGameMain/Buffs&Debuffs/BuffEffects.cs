@@ -8,7 +8,7 @@ Description: The code handles the visual effects for the player buffs.
 
 namespace SD
 {
-    public class BuffEffects : BuffBackend
+    public class BuffEffects : MonoBehaviour
     {
         private Renderer meshRenderer;
         private GameController gameController;
