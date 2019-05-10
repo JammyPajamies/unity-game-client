@@ -44,8 +44,24 @@ namespace SD
                 //changes player model's color when power-up is picked up
                 meshRenderer.material.SetColor("_Color", Color.blue);
 
+                // Get trails and enable them.
+                Component[] buffTrails = this.GetComponentsInChildren<TrailRenderer>();
+                foreach (TrailRenderer trail in buffTrails)
+                {
+                    if (!trail.isVisible)
+                    {
+                        trail.enabled = true;
+                    }
+                }
+
                 //duration of power-up's effects
                 yield return new WaitForSeconds(speedBoostDuration);
+
+                // Disable the extra trails.
+                foreach (TrailRenderer trail in buffTrails)
+                {
+                    trail.enabled = false;
+                }
 
                 //returns player model color back to original
                 //sets power-up status to false
@@ -68,7 +84,7 @@ namespace SD
                 gameController.SetIsPointBuffActive(false);
             }
 
-            //evasion power-up
+            /*//evasion power-up
             if (gameController.getEvasionBoostStatus() == true)
             {
                 //changes player model's color when power-up is picked up
@@ -81,7 +97,7 @@ namespace SD
                 //sets power-up status to false
                 meshRenderer.material.SetColor("_Color", Color.white);
                 gameController.SetIsEvasionBuffActive(false);
-            }
+            }*/
 
             //slow down
             if (gameController.getSlowDownStatus() == true)
