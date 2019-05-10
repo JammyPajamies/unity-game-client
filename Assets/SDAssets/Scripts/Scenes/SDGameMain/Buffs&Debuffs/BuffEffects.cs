@@ -54,7 +54,7 @@ namespace SD
                 }
 
                 //duration of power-up's effects
-                yield return new WaitForSeconds(3f);
+                yield return new WaitForSeconds(speedBoostDuration);
 
                 // Disable the extra trails.
                 foreach (TrailRenderer trail in buffTrails)
