@@ -6,6 +6,8 @@ namespace SD {
     public class SDPersistentData : MonoBehaviour {
 
         private int playerFinalScore;
+        // 0 = mackeral, 1 = striped bass, 2 = barracuda
+        private int playerFishSelectionIndex;
         private int roundsCompleted;
         private bool isGameCompleted;
         private int winningScore;
@@ -64,6 +66,16 @@ namespace SD {
 
         public void setPlayerFinalScore(int score) {
             playerFinalScore = score;
+        }
+
+        public int GetPlayerFishSelectionIndex()
+        {
+            return playerFishSelectionIndex;
+        }
+
+        public void SetPlayerFishSelectionIndex(int fish)
+        {
+            playerFishSelectionIndex = fish;
         }
 
         public int getPlayerFinalScore() {

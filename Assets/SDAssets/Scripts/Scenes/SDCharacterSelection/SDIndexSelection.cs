@@ -41,6 +41,9 @@ public class SDIndexSelection : MonoBehaviour {
         //changes the index and makes the model with that index appear
         selectionIndex = index;
         characters[selectionIndex].SetActive(true);
+
+        // Also set the field in PersistentData so we can load the correct fish later.
+        FindObjectOfType<SD.SDPersistentData>().SetPlayerFishSelectionIndex(index);
     }
 	
 }
