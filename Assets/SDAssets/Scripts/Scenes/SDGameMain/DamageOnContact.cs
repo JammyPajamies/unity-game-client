@@ -35,7 +35,6 @@ namespace SD
             if (other.tag == "Player")
             {
                 Instantiate(bleeding, other.transform.position, Quaternion.identity);
-                StartCoroutine(destroyBleeding());
                 player.GetComponent<AudioSource>().PlayOneShot(audioClip);
                 if (gameController.GetHealth() > 0)
                 {
@@ -53,7 +52,6 @@ namespace SD
                 if (lastDamage >= 2)
                 {
                     Instantiate(bleeding, other.transform.position, Quaternion.identity);
-                    StartCoroutine(destroyBleeding());
                     player.GetComponent<AudioSource>().PlayOneShot(audioClip);
                     if (gameController.GetHealth() > 0)
                     {
@@ -62,12 +60,6 @@ namespace SD
                     lastDamage = 0;
                 }
             }
-        }
-
-        IEnumerator destroyBleeding()
-        {
-            yield return new WaitForSeconds(3.85f);
-            Destroy(GameObject.FindGameObjectWithTag("Bubbles"));
         }
     }
 }
