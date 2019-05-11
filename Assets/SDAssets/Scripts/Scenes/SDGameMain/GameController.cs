@@ -84,7 +84,7 @@ namespace SD {
 
         // Prey fish count and max.
         private int preyFishRemaining = 0;
-        private int preyFishTotal;
+        private int preyFishTotal = 0;
 
         Rigidbody playerClone;
 
@@ -130,7 +130,7 @@ namespace SD {
                     sdGameManager.FindNPCFishPosition (i); // Finds and spawns prey at the returned location.
                 } else {
                     int randomFishIndex = Random.Range(0, ingameNPCFishPrefabsArray.Length);
-                    Debug.Log("Spawning fish with index id: " + randomFishIndex);
+                    //Debug.Log("Spawning fish with index id: " + randomFishIndex);
                     spawnPrey (i, randomFishIndex);
                 }
                 
@@ -146,7 +146,7 @@ namespace SD {
             // Initialize remaining to total.
             preyFishRemaining = preyFishTotal;
 
-            Debug.Log("Prey fish to start with: " + preyFishTotal);
+            //Debug.Log("Prey fish to start with: " + preyFishTotal);
 
             if (SDMain.networkManager != null) {  // We are playing multiplayer
                 rbOpponent = (Rigidbody)Instantiate (opponent, opponentInitialPosition, opponentInitialRotation);
@@ -241,7 +241,7 @@ namespace SD {
                 //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
-            Debug.Log("Insantiating fish from index: " + preyIndex);
+            //Debug.Log("Insantiating fish from index: " + preyIndex);
             npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
             npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
             npcFishObjects [i].SetActive (true);
@@ -503,7 +503,7 @@ namespace SD {
         public void ReducePreyFishRemaining()
         {
             preyFishRemaining--;
-            Debug.Log("Prey fish remaining: " + preyFishRemaining + " out of: " + preyFishTotal);
+            //Debug.Log("Prey fish remaining: " + preyFishRemaining + " out of: " + preyFishTotal);
         }
 
         public void showCountdownPanel(){

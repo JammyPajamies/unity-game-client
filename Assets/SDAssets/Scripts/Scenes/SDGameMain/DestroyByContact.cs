@@ -23,43 +23,18 @@ namespace SD {
             audioSource.clip = audioClip;
 
         }
-            
-        
-        // Update is called once per frame
-        void Update () {
-            //takes effect when the player picks up a point boost power-up
-            /*
-            if (gameController.getPointBoostStatus() == true)
-            {
-                newScoreValue = 50;
-            }
-            else
-            {
-                newScoreValue = 10;
-            }
-            */
-        }
 
         // Destroys the attached object upon a collison with the player
         void OnTriggerEnter(Collider other) {
             if (other.tag == "Player") {
                 int npcFishId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().id;
                 int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController> ().getNPCFishData().speciesId;
-                Debug.Log ("Consumed prey with ID: " + npcFishId);
+                //Debug.Log ("Consumed prey with ID: " + npcFishId);
                 if (SDMain.networkManager != null) {
                     GameManager.getInstance ().DestroyNPCFish (npcFishId, npcFishSpeciesId);
                 }
                 AudioSource.PlayClipAtPoint (audioClip, mainCamera.transform.position);
                 gameController.destroyPrey (npcFishId);
-
-                /*
-                if (npcFishSpeciesId == 5)
-                {
-                    gameController.AddUnscoredPoint(newScoreValue * 2);
-                    //attempting to increase points based on food chain relationship
-                }
-                else { gameController.AddUnscoredPoint(newScoreValue); }
-                */
 
                 gameController.AddUnscoredPoint(newScoreValue);
             }
