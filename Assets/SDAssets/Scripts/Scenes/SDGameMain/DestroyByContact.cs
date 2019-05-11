@@ -5,61 +5,41 @@
 
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Audio;
 
-namespace SD {
-    public class DestroyByContact : MonoBehaviour {
-
+namespace SD
+{
+    public class DestroyByContact : MonoBehaviour
+    {
         private GameController gameController;
         private int newScoreValue = 10; // Score to be recieved by eating prey
         private GameObject mainCamera;
-        private AudioSource audioSource;
+        
         public AudioClip audioClip;
+        private GameObject player;
 
         // Use this for initialization
-        void Start () {
-            gameController = GameController.getInstance ();
-            audioSource = GetComponent<AudioSource> ();
-            mainCamera = GameObject.FindGameObjectWithTag ("MainCamera");
-            audioSource.clip = audioClip;
-
-        }
-            
-        
-        // Update is called once per frame
-        void Update () {
-            //takes effect when the player picks up a point boost power-up
-            /*
-            if (gameController.getPointBoostStatus() == true)
-            {
-                newScoreValue = 50;
-            }
-            else
-            {
-                newScoreValue = 10;
-            }
-            */
+        void Start()
+        {
+            gameController = GameController.getInstance();
+            mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            player = GameObject.FindGameObjectWithTag("Player");
         }
 
         // Destroys the attached object upon a collison with the player
-        void OnTriggerEnter(Collider other) {
-            if (other.tag == "Player") {
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.tag == "Player")
+            {
                 int npcFishId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().id;
-                int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController> ().getNPCFishData().speciesId;
-                Debug.Log ("Consumed prey with ID: " + npcFishId);
-                if (SDMain.networkManager != null) {
-                    GameManager.getInstance ().DestroyNPCFish (npcFishId, npcFishSpeciesId);
-                }
-                AudioSource.PlayClipAtPoint (audioClip, mainCamera.transform.position);
-                gameController.destroyPrey (npcFishId);
-
-                /*
-                if (npcFishSpeciesId == 5)
+                int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().speciesId;
+                //Debug.Log ("Consumed prey with ID: " + npcFishId);
+                if (SDMain.networkManager != null)
                 {
-                    gameController.AddUnscoredPoint(newScoreValue * 2);
-                    //attempting to increase points based on food chain relationship
+                    GameManager.getInstance().DestroyNPCFish(npcFishId, npcFishSpeciesId);
                 }
-                else { gameController.AddUnscoredPoint(newScoreValue); }
-                */
+                player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+                gameController.destroyPrey(npcFishId);
 
                 gameController.AddUnscoredPoint(newScoreValue);
             }

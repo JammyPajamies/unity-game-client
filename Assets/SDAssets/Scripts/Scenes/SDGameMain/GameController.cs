@@ -14,7 +14,7 @@ namespace SD {
 
         public GameObject Prey;
         public Vector3 spawnValue;
-        public GameObject[] preyArray;
+        public GameObject[] ingameNPCFishPrefabsArray;
         public GameObject bubbles;
 
         // Number of prey spawn at a game start
@@ -79,10 +79,16 @@ namespace SD {
         private bool pointBoostOn = false;
         private bool speedBoostOn = false;
         private bool evasionBoostOn = false;
-
         private bool slowDownOn = false;
-
         private int pointBonus = 0;
+
+        // Prey fish count and max.
+        private int preyFishRemaining = 0;
+        private int preyFishTotal = 0;
+
+        // The fade in and out transitions for the scene.
+        public Animator fadeOutAnimator;
+        public Animator fadeInAnimator;
 
         Rigidbody playerClone;
 
@@ -99,14 +105,15 @@ namespace SD {
             // Spawn the appropriate player based on the character selection screen.
             if (FindObjectOfType<SDPersistentData>() != null)
             {
-                playerClone = (Rigidbody)Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
+                Debug.Log("Player fish index: " + FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex());
+                playerClone = Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
             }
             else
             {
-                playerClone = (Rigidbody)Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
+                playerClone = Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
             }
-            Rigidbody playerBaseClone = (Rigidbody)Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
-            Rigidbody opponentBaseClone = (Rigidbody)Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
+            Rigidbody playerBaseClone = Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
+            Rigidbody opponentBaseClone = Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
             score = 0;
             hasSurrendered = false;
             opponentScore = 0;
@@ -127,9 +134,24 @@ namespace SD {
                 if (SDMain.networkManager != null) {
                     sdGameManager.FindNPCFishPosition (i); // Finds and spawns prey at the returned location.
                 } else {
-                    spawnPrey (i, Random.Range(0, preyArray.Length-1));
+                    int randomFishIndex = Random.Range(0, ingameNPCFishPrefabsArray.Length);
+                    //Debug.Log("Spawning fish with index id: " + randomFishIndex);
+                    spawnPrey (i, randomFishIndex);
+                }
+                
+                // After spawning the fish, get the number of prey fish.
+                // Prey fish are fish that the players are able to consume.
+                if(npcFishObjects[i].tag == "PlayerPrey" ||
+                    npcFishObjects[i].tag == "SpeedBuffFish" ||
+                    npcFishObjects[i].tag == "PointBuffFish")
+                {
+                    preyFishTotal++;
                 }
             }
+            // Initialize remaining to total.
+            preyFishRemaining = preyFishTotal;
+
+            //Debug.Log("Prey fish to start with: " + preyFishTotal);
 
             if (SDMain.networkManager != null) {  // We are playing multiplayer
                 rbOpponent = (Rigidbody)Instantiate (opponent, opponentInitialPosition, opponentInitialRotation);
@@ -145,9 +167,13 @@ namespace SD {
             }
 
             // Spawn the predator: 1 of type 8
-            spawnNpcSet(8, 1);
+            //spawnNpcSet(8, 1);
             //Display the food chain panel for n seconds upon game start
             StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
+            // Find the audio mixer and ask it to fade in.
+            StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
+            // Finally, fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
         }
 
       
@@ -174,6 +200,10 @@ namespace SD {
                 if (health <= 0) {
                     deathPanelCanvas.SetActive (true);
                     this.health = 0;
+                    // Find the audio mixer and ask it to fade out.
+                    StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
+                    // Fade out the screen.
+                    fadeOutAnimator.SetTrigger("FadeOut");
                     StartCoroutine (goToResultScene ());
                     playerClone.transform.localScale = new Vector3 (0, 0, 0);
                 }
@@ -224,7 +254,8 @@ namespace SD {
                 //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
-            npcFishObjects [i] = Instantiate (preyArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
+            //Debug.Log("Insantiating fish from index: " + preyIndex);
+            npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
             npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
             npcFishObjects [i].SetActive (true);
             // Associate the metadata of the prey with the gameobject.
@@ -240,6 +271,8 @@ namespace SD {
             // Modify the clone to your heart's content
             if (npcFishObjects [i] != null) {
                 Destroy (npcFishObjects [i]);
+                // Reduce the count of remaining prey fish.
+                ReducePreyFishRemaining();
                 npcFishes [i].isAlive = false;
             }
         }
@@ -467,6 +500,25 @@ namespace SD {
             return npcFishObjects;
         }
 
+        // Return the initial number of prey fish spawned.
+        public int GetPreyFishTotal()
+        {
+            return preyFishTotal;
+        }
+
+        // Return the number of prey fish remaining in the scene.
+        public int GetPreyFishRemaining()
+        {
+            return preyFishRemaining;
+        }
+
+        // Reduce the number of prey fish remaining by 1.
+        public void ReducePreyFishRemaining()
+        {
+            preyFishRemaining--;
+            //Debug.Log("Prey fish remaining: " + preyFishRemaining + " out of: " + preyFishTotal);
+        }
+
         public void showCountdownPanel(){
             countdownPanelCanvas.SetActive (true);
         }
@@ -577,7 +629,6 @@ namespace SD {
         {
             return slowDownOn;
         }
-
 
         public bool getEvasionBoostStatus()
         {

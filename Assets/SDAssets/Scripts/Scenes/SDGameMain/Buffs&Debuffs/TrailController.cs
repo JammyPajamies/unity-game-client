@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This script handles the visibility of the trails
+/// that appear when a player gets a speed bonus powerup.
+/// </summary>
 namespace SD
 {
     public class TrailController : MonoBehaviour

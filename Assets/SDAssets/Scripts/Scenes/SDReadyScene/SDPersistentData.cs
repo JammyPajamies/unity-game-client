@@ -7,7 +7,7 @@ namespace SD {
 
         private int playerFinalScore;
         // -1 = error, 0 = mackeral, 1 = striped bass, 2 = barracuda
-        private int playerFishSelectionIndex = -1;
+        private int playerFishSelectionIndex = 0;
         private int roundsCompleted;
         private bool isGameCompleted;
         private int winningScore;
@@ -17,6 +17,8 @@ namespace SD {
         private static SDPersistentData sdPersistentData;
         /*private SDConnectionManager cManager; TODO
         private SDMessageQueue mQueue;*/
+
+        public Animator fadeInAnimator;
 
         void Awake() {
             if (sdPersistentData) {
@@ -40,6 +42,11 @@ namespace SD {
             if (SDMain.networkManager != null) {
                 SDMain.networkManager.Listen (NetworkCode.SD_DISCONNECT, ResponseSDOpponentDisconnect);
             }
+
+            // Find the audio mixer and ask it to fade in.
+            StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
+            // Finally, fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
         }
 
         void Update () {
