@@ -22,7 +22,21 @@ namespace SD
         public void AddPreyToList()
         {
             //adds the numerous NPC fish to a prey list
-            GameObject[] ItemsInList = GameObject.FindGameObjectsWithTag("NpcFish");
+            //GameObject[] ItemsInList = GameObject.FindGameObjectsWithTag("NpcFish");
+            List<GameObject> ItemsInList = new List<GameObject>();
+            foreach(GameObject preyFish in GameObject.FindGameObjectsWithTag("PlayerPrey"))
+            {
+                ItemsInList.Add(preyFish);
+            }
+            foreach (GameObject preyFish in GameObject.FindGameObjectsWithTag("SpeedBuffFish"))
+            {
+                ItemsInList.Add(preyFish);
+            }
+            foreach (GameObject preyFish in GameObject.FindGameObjectsWithTag("PointBuffFish"))
+            {
+                ItemsInList.Add(preyFish);
+            }
+
             foreach (GameObject _prey in ItemsInList)
             {
                 prey.Add(_prey.transform);

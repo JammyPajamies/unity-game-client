@@ -85,6 +85,7 @@ namespace SD {
             }
         }
 
+        // Gets the other player's position and rotation information.
         public void ResponseSDPosition(NetworkResponse r) {
             ResponseSDPlayerPosition response = r as ResponseSDPlayerPosition;
             gameController.getOpponentPlayer().xPosition = response.xPosition;
@@ -99,6 +100,7 @@ namespace SD {
             }
         }
 
+        // Gets the input from the other player.
         public void ResponseSDKeyboard(NetworkResponse r) {
 
             ResponseSDKeyboard response = r as ResponseSDKeyboard;
