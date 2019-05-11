@@ -18,6 +18,8 @@ namespace SD {
         /*private SDConnectionManager cManager; TODO
         private SDMessageQueue mQueue;*/
 
+        public Animator fadeInAnimator;
+
         void Awake() {
             if (sdPersistentData) {
                 DestroyImmediate (gameObject);
@@ -43,6 +45,8 @@ namespace SD {
 
             // Find the audio mixer and ask it to fade in.
             StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
+            // Finally, fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
         }
 
         void Update () {

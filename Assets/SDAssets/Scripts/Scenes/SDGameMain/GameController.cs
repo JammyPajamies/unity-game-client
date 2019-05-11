@@ -200,9 +200,11 @@ namespace SD {
                 if (health <= 0) {
                     deathPanelCanvas.SetActive (true);
                     this.health = 0;
-                    StartCoroutine (goToResultScene ());
                     // Find the audio mixer and ask it to fade out.
                     StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
+                    // Fade out the screen.
+                    fadeOutAnimator.SetTrigger("FadeOut");
+                    StartCoroutine (goToResultScene ());
                     playerClone.transform.localScale = new Vector3 (0, 0, 0);
                 }
             }
