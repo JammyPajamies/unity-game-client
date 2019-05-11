@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 /// <summary>
 /// This is the (mostly) self-contained backend and base class for the buff system.
@@ -41,6 +42,8 @@ namespace SD
         // Optional use audio source for buff pickup sounds.
         public AudioClip buffSound = null;
         private AudioSource audioSource;
+        // The master audio mixer.
+        public AudioMixer mainMixer;
 
         void Awake()
         {
@@ -51,6 +54,9 @@ namespace SD
         // to continue using the regular Update function.
         private void LateUpdate()
         {
+            audioSource.volume = 0.5f;
+            audioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
+
             // Update and reset base stat and multiplier if buff duration has elapsed.
             if (Time.timeSinceLevelLoad > buffEndTime)
             {

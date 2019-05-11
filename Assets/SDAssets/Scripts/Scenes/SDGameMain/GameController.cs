@@ -86,6 +86,10 @@ namespace SD {
         private int preyFishRemaining = 0;
         private int preyFishTotal = 0;
 
+        // The fade in and out transitions for the scene.
+        public Animator fadeOutAnimator;
+        public Animator fadeInAnimator;
+
         Rigidbody playerClone;
 
         void Awake () {
@@ -101,14 +105,15 @@ namespace SD {
             // Spawn the appropriate player based on the character selection screen.
             if (FindObjectOfType<SDPersistentData>() != null)
             {
-                playerClone = (Rigidbody)Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
+                Debug.Log("Player fish index: " + FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex());
+                playerClone = Instantiate(playerPrefabs[FindObjectOfType<SDPersistentData>().GetPlayerFishSelectionIndex()], playerInitialPosition, playerInitialRotation);
             }
             else
             {
-                playerClone = (Rigidbody)Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
+                playerClone = Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
             }
-            Rigidbody playerBaseClone = (Rigidbody)Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
-            Rigidbody opponentBaseClone = (Rigidbody)Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
+            Rigidbody playerBaseClone = Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
+            Rigidbody opponentBaseClone = Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
             score = 0;
             hasSurrendered = false;
             opponentScore = 0;
@@ -165,6 +170,10 @@ namespace SD {
             //spawnNpcSet(8, 1);
             //Display the food chain panel for n seconds upon game start
             StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
+            // Find the audio mixer and ask it to fade in.
+            StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
+            // Finally, fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
         }
 
       
@@ -192,6 +201,8 @@ namespace SD {
                     deathPanelCanvas.SetActive (true);
                     this.health = 0;
                     StartCoroutine (goToResultScene ());
+                    // Find the audio mixer and ask it to fade out.
+                    StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
                     playerClone.transform.localScale = new Vector3 (0, 0, 0);
                 }
             }
@@ -616,7 +627,6 @@ namespace SD {
         {
             return slowDownOn;
         }
-
 
         public bool getEvasionBoostStatus()
         {

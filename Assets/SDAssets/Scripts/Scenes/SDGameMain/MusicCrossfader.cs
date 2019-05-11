@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 /// <summary>
 /// This script crossfades between provided clips.
@@ -11,6 +12,8 @@ namespace SD
 {
     public class MusicCrossfader : MonoBehaviour
     {
+        // The master audio mixer.
+        public AudioMixer mainMixer;
         // List of audio players.
         private List<AudioSource> audioPlayers = new List<AudioSource>();
         // List of audio tracks
@@ -57,6 +60,7 @@ namespace SD
                 // if they are not the first track.
                 AudioSource newSource = gameObject.AddComponent<AudioSource>();
                 audioPlayers.Add(newSource);
+                audioPlayers[i].outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
                 audioPlayers[i].playOnAwake = false;
                 audioPlayers[i].clip = audioTracks[i];
                 if (i > 0)

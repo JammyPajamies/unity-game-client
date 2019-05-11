@@ -16,16 +16,14 @@ namespace SD
         private float alphaRatio = 0.0f;
         private float speedBoostDuration = 0f;
         private bool areTrailsOn = false;
-        Component[] buffTrails;
+        Component[] trails;
 
         // Use this for initialization
         void Start()
         {
             playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 
-            buffTrails = GetComponentsInChildren<TrailRenderer>();
-
-            alphaRatio = playerController.GetCurrentToMaxSpeedRatio();
+            trails = GetComponentsInChildren<TrailRenderer>();
         }
 
         // Update is called once per frame
@@ -35,7 +33,7 @@ namespace SD
             alphaRatio = Mathf.Clamp(playerController.GetCurrentToMaxSpeedRatio(), 0, maxTrailAlpha);
 
             // Go through and adjust the alpha level on the trails.
-            foreach (TrailRenderer trail in buffTrails)
+            foreach (TrailRenderer trail in trails)
             {
                 trail.material.SetColor("_TintColor", new Color(
                     alphaRatio,

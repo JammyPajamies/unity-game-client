@@ -5,36 +5,41 @@
 
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Audio;
 
-namespace SD {
-    public class DestroyByContact : MonoBehaviour {
-
+namespace SD
+{
+    public class DestroyByContact : MonoBehaviour
+    {
         private GameController gameController;
         private int newScoreValue = 10; // Score to be recieved by eating prey
         private GameObject mainCamera;
-        private AudioSource audioSource;
+        
         public AudioClip audioClip;
+        private GameObject player;
 
         // Use this for initialization
-        void Start () {
-            gameController = GameController.getInstance ();
-            audioSource = GetComponent<AudioSource> ();
-            mainCamera = GameObject.FindGameObjectWithTag ("MainCamera");
-            audioSource.clip = audioClip;
-
+        void Start()
+        {
+            gameController = GameController.getInstance();
+            mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            player = GameObject.FindGameObjectWithTag("Player");
         }
 
         // Destroys the attached object upon a collison with the player
-        void OnTriggerEnter(Collider other) {
-            if (other.tag == "Player") {
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.tag == "Player")
+            {
                 int npcFishId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().id;
-                int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController> ().getNPCFishData().speciesId;
+                int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().speciesId;
                 //Debug.Log ("Consumed prey with ID: " + npcFishId);
-                if (SDMain.networkManager != null) {
-                    GameManager.getInstance ().DestroyNPCFish (npcFishId, npcFishSpeciesId);
+                if (SDMain.networkManager != null)
+                {
+                    GameManager.getInstance().DestroyNPCFish(npcFishId, npcFishSpeciesId);
                 }
-                AudioSource.PlayClipAtPoint (audioClip, mainCamera.transform.position);
-                gameController.destroyPrey (npcFishId);
+                player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+                gameController.destroyPrey(npcFishId);
 
                 gameController.AddUnscoredPoint(newScoreValue);
             }
