@@ -20,14 +20,14 @@ namespace SD
         public GameObject bleeding;
 
         public AudioClip audioClip;
-        private GameObject player;
+        private AudioSource playerAudioSource;
 
         // Use this for initialization
         void Start()
         {
             gameController = GameController.getInstance();
             mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            player = GameObject.FindGameObjectWithTag("Player");
+            playerAudioSource = GameObject.FindGameObjectWithTag("Player").GetComponent<AudioSource>();
         }
 
         void OnTriggerEnter(Collider other)
@@ -35,7 +35,7 @@ namespace SD
             if (other.tag == "Player")
             {
                 Instantiate(bleeding, other.transform.position, Quaternion.identity);
-                player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+                playerAudioSource.PlayOneShot(audioClip);
                 if (gameController.GetHealth() > 0)
                 {
                     gameController.UpdateHealth(damage);
@@ -52,7 +52,7 @@ namespace SD
                 if (lastDamage >= 2)
                 {
                     Instantiate(bleeding, other.transform.position, Quaternion.identity);
-                    player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+                    playerAudioSource.PlayOneShot(audioClip);
                     if (gameController.GetHealth() > 0)
                     {
                         gameController.UpdateHealth(damage);

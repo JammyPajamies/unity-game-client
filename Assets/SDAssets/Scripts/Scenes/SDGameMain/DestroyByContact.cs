@@ -14,16 +14,16 @@ namespace SD
         private GameController gameController;
         private int newScoreValue = 10; // Score to be recieved by eating prey
         private GameObject mainCamera;
-        
-        public AudioClip audioClip;
-        private GameObject player;
+
+        // The random sound player object that will be used to play a random sound on consumption.
+        private RandomSoundPlayer randomSound;
 
         // Use this for initialization
         void Start()
         {
             gameController = GameController.getInstance();
             mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            player = GameObject.FindGameObjectWithTag("Player");
+            randomSound = gameObject.GetComponent<RandomSoundPlayer>();
         }
 
         // Destroys the attached object upon a collison with the player
@@ -31,6 +31,7 @@ namespace SD
         {
             if (other.tag == "Player")
             {
+                // Get info and inform the network that the prey fish has been destroyed.
                 int npcFishId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().id;
                 int npcFishSpeciesId = gameObject.GetComponentInParent<NPCFishController>().getNPCFishData().speciesId;
                 //Debug.Log ("Consumed prey with ID: " + npcFishId);
@@ -38,10 +39,14 @@ namespace SD
                 {
                     GameManager.getInstance().DestroyNPCFish(npcFishId, npcFishSpeciesId);
                 }
-                player.GetComponent<AudioSource>().PlayOneShot(audioClip);
+
+                // Tell the player audio source to play a random consume sound.
+                randomSound.PlayRandomSound();
+                // Then add the points.
+                gameController.AddUnscoredPoint(newScoreValue);
+                // Finally, destroy the consumed fish.
                 gameController.destroyPrey(npcFishId);
 
-                gameController.AddUnscoredPoint(newScoreValue);
             }
         }
     }
