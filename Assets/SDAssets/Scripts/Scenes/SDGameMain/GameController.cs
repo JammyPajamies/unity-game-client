@@ -167,7 +167,7 @@ namespace SD {
             }
 
             // Spawn the predator: 1 of type 8
-            //spawnNpcSet(8, 1);
+            spawnNpcSet(8, 1);
             //Display the food chain panel for n seconds upon game start
             StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
             // Find the audio mixer and ask it to fade in.
@@ -266,7 +266,6 @@ namespace SD {
 
             // Displays bubbles when destroying prey
             Instantiate (bubbles, playerClone.transform.position, Quaternion.identity);
-            StartCoroutine( destroyBubbles() );
 
             // Modify the clone to your heart's content
             if (npcFishObjects [i] != null) {
@@ -275,15 +274,6 @@ namespace SD {
                 ReducePreyFishRemaining();
                 npcFishes [i].isAlive = false;
             }
-        }
-
-        /// <summary>
-        /// Destroies the bubbles invoked by destroyPrey()
-        /// </summary
-        /// <returns>Destroys bubbles after 5 seconds</returns>
-        IEnumerator destroyBubbles(){
-            yield return new WaitForSeconds (5);
-            Destroy (GameObject.FindGameObjectWithTag("Bubbles"));
         }
 
         // Spawns 'num' Npc fish of type 'speciesId'
