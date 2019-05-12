@@ -70,7 +70,8 @@ namespace SD
             //npcFish.current = Vector2.MoveTowards(npcFish.current, npcFish.target, 35 * Time.deltaTime);
             //  npcFish.xPosition = npcFish.current.x;
             // npcFish.yPosition = npcFish.current.y;
-            /*if (Vector2.Distance(npcFish.current,npcFish.target)<5f) { SetTarget(); }
+            /*
+            if (Vector2.Distance(npcFish.current,npcFish.target)<5f) { SetTarget(); }
             npcFish.xRotationAngle = Vector2.Angle(npcFish.current, npcFish.target);
             transform.position = Vector2.MoveTowards(transform.position, npcFish.target, UnityEngine.Random.Range(10f, 100f) * Time.deltaTime);
             npcFish.UpdatePos(transform.position.x, transform.position.y);*/
