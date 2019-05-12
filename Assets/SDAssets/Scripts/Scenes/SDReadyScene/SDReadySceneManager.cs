@@ -21,7 +21,7 @@ namespace SD {
                     }
                     catch(Exception e) {
                     }
-                    SceneManager.LoadScene ("SDCharacterSelection");
+                    SceneManager.LoadScene ("SDGameMain");
                 }
             }
         }
@@ -38,7 +38,7 @@ namespace SD {
                     }
                     catch (Exception e) {
                     }
-                    SceneManager.LoadScene ("SDCharacterSelection");
+                    SceneManager.LoadScene ("SDGameMain");
                 }
             }
         }
@@ -61,6 +61,7 @@ namespace SD {
             }
         }
 
+        // Move network code to character select controller so that we can force a game start sync.
         public void StartGame() {
             if (SDMain.networkManager != null) {
                 SDMain.networkManager.Send (SDStartGameProtocol.Prepare (Constants.USER_ID));
@@ -68,7 +69,7 @@ namespace SD {
             } else {
                 Debug.LogWarning ("Starting game without server component.");
                 //SceneManager.LoadScene ("SDGameMain");
-                SceneManager.LoadScene ("SDCharacterSelection");
+                SceneManager.LoadScene ("SDGameMain");
             }
         }
 

@@ -5,12 +5,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SD
 {
     public class SimpleLoader : MonoBehaviour
     {
         public Animator fadeOutAnimator;
+        private Button playButton;
+        private SDReadySceneManager readyManager;
+
+        private void Start()
+        {
+            playButton = this.gameObject.GetComponent<Button>();
+            readyManager = GameObject.FindObjectOfType<SDReadySceneManager>();
+        }
 
         public void loadMainMenu()
         {
@@ -20,6 +29,8 @@ namespace SD
         public void loadGame()
         {
             // Find the audio mixer and ask it to fade out.
+            playButton.interactable = false;
+            readyManager.StartGame();
             StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
             StartCoroutine(MainGameTransition());
         }
@@ -31,16 +42,10 @@ namespace SD
             fadeOutAnimator.SetTrigger("FadeOut");
             yield return new WaitForSeconds(FindObjectOfType<MainMixerController>().fadeTime);
 
-            FadeToLevel("SDGameMain");
-        }
-
-        public void FadeToLevel(string levelName)
-        {
             if (FindObjectOfType<SDPersistentData>() != null)
             {
                 FindObjectOfType<SDPersistentData>().GetComponent<AudioSource>().enabled = false;
             }
-            SceneManager.LoadScene(levelName);
         }
     }
 }
