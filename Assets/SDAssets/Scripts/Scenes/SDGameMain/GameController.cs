@@ -254,7 +254,7 @@ namespace SD {
                 //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
-            //Debug.Log("Insantiating fish from index: " + preyIndex);
+            Debug.Log("Insantiating fish from index: " + preyIndex);
             npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
             npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
             npcFishObjects [i].SetActive (true);
@@ -266,7 +266,6 @@ namespace SD {
 
             // Displays bubbles when destroying prey
             Instantiate (bubbles, playerClone.transform.position, Quaternion.identity);
-            StartCoroutine( destroyBubbles() );
 
             // Modify the clone to your heart's content
             if (npcFishObjects [i] != null) {
@@ -275,15 +274,6 @@ namespace SD {
                 ReducePreyFishRemaining();
                 npcFishes [i].isAlive = false;
             }
-        }
-
-        /// <summary>
-        /// Destroies the bubbles invoked by destroyPrey()
-        /// </summary
-        /// <returns>Destroys bubbles after 5 seconds</returns>
-        IEnumerator destroyBubbles(){
-            yield return new WaitForSeconds (5);
-            Destroy (GameObject.FindGameObjectWithTag("Bubbles"));
         }
 
         // Spawns 'num' Npc fish of type 'speciesId'

@@ -5,8 +5,8 @@ using UnityEngine.Audio;
 
 /// <summary>
 /// This script crossfades between provided clips.
-/// It is currently set to use the ratio of remaining/total prey fish
-/// for transition breakpoints.
+/// It is currently set to use time left in the game
+/// to crossfade music.
 /// </summary>
 namespace SD
 {
@@ -31,10 +31,12 @@ namespace SD
         private bool[] transitionsStarted;
 
         // This is the ratio (step) of each transition.
-        private float transitionRatio;
+        private float ratioThresholdPerTransition;
+        // The maximal value for the scaling.
+        private float totalUnits = 0.0f;
 
-        // Get remaining/total fish counts from the game controller.
-        private GameController gameController;
+        // Hold a reference to the object that we will be querying to get our updated transition ratios.
+        private Timer ratioScalingSource;
 
         private void Start()
         {
@@ -49,7 +51,7 @@ namespace SD
             }
 
             // Setup the ratio to compare against for transitions.
-            transitionRatio = 1.0f / audioTracks.Count;
+            ratioThresholdPerTransition = 1.0f / audioTracks.Count;
             //Debug.Log("TransitionRatio: " + transitionRatio);
 
             // Now, have the audio players start playing music,
@@ -78,25 +80,37 @@ namespace SD
                 // then reduce its volume to 0.
             }
 
-            gameController = GameController.getInstance();
+            // Get a reference to the object that we will be using.
+            ratioScalingSource = FindObjectOfType<Timer>();
+            // Get and store the value of the maximal amount of whatever units
+            // that we will use for ratio calculations.
+            totalUnits = ratioScalingSource.GetMaxTimeInGame();
         }
 
         void Update()
         {
+            // Old method using the number of fish consumed.
+            // Later fourn to be inconsistent with multiplayer
+            // where the host player is infinitely spawning fish (up to a cap).
+            /*
             int preyFishTotal = gameController.GetPreyFishTotal();
             int preyFishRemaining = gameController.GetPreyFishRemaining();
             float fishConsumedRatio = 1.0f - (float)preyFishRemaining / (float)preyFishTotal;
+            int transitionIndexID = Mathf.FloorToInt(fishConsumedRatio / ratioThresholdPerTransition) - 1;
+            */
 
             //Debug.Log("Remaining/total fish: " + preyFishRemaining + "/" + preyFishTotal + " Ratio: " + fishConsumedRatio);
 
+            // Current implementation uses the time in the game and splits it evenly into chunks for calculations.
+            float remainingUnits = ratioScalingSource.GetTimeRemaining();
+            float fishConsumedRatio = 1.0f - (float)remainingUnits / (float)totalUnits;
 
             // This variable is initally -1 at the start of the game
             // and goes up in steps of 1 up to the max number of sound tracks.
-            int transitionIndexID = Mathf.FloorToInt(fishConsumedRatio / transitionRatio) - 1;
+            int transitionIndexID = Mathf.FloorToInt(fishConsumedRatio / ratioThresholdPerTransition) - 1;
 
             // If we have a ratio bigger than the ratio that would trigger a transition,
             // check if we need to start a transition.
-
             if (transitionIndexID >= 0 && transitionIndexID < transitionCount && !transitionsStarted[transitionIndexID])
             {
                 // Get the transition that we would be doing given the ratios.

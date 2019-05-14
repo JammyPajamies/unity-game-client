@@ -18,6 +18,7 @@ namespace SD {
         public GameObject panelTimesUp;
 
         private int maxCountdownSeconds = 6;
+        private float maxTime;
         private DateTime offsetDateTime;
         private static GameManager sdGameManager;
         private static GameController sdGameController;
@@ -30,6 +31,7 @@ namespace SD {
             sdGameController = GameController.getInstance ();
             sdPersistentData = SDPersistentData.getInstance ();
             hasTimerStarted = false;
+            maxTime = time;
         }
 
         void Update() {
@@ -71,8 +73,13 @@ namespace SD {
             
         }
 
-        float GetTime (){
+        public float GetTimeRemaining (){
             return this.time;
+        }
+
+        public float GetMaxTimeInGame()
+        {
+            return this.maxTime;
         }
         
         public static DateTime TrimMilliseconds(DateTime dt) {
