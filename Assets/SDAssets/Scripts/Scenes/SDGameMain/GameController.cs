@@ -167,7 +167,7 @@ namespace SD {
             }
 
             // Spawn the predator: 1 of type 8
-            spawnNpcSet(8, 1);
+            //spawnNpcSet(8, 1);
             //Display the food chain panel for n seconds upon game start
             StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
             // Find the audio mixer and ask it to fade in.
@@ -254,7 +254,7 @@ namespace SD {
                 //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
-            //Debug.Log("Insantiating fish from index: " + preyIndex);
+            Debug.Log("Insantiating fish from index: " + preyIndex);
             npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
             npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
             npcFishObjects [i].SetActive (true);
