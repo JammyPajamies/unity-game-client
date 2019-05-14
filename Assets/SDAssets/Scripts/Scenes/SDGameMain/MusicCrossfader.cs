@@ -32,8 +32,6 @@ namespace SD
 
         // This is the ratio (step) of each transition.
         private float ratioThresholdPerTransition;
-        // The maximal value for the scaling.
-        private float totalUnits = 0.0f;
 
         // Hold a reference to the object that we will be querying to get our updated transition ratios.
         private Timer ratioScalingSource;
@@ -52,7 +50,7 @@ namespace SD
 
             // Setup the ratio to compare against for transitions.
             ratioThresholdPerTransition = 1.0f / audioTracks.Count;
-            //Debug.Log("TransitionRatio: " + transitionRatio);
+            Debug.Log("TransitionRatio: " + ratioThresholdPerTransition);
 
             // Now, have the audio players start playing music,
             // but reduce the volume of all of the but the first one.
@@ -73,8 +71,9 @@ namespace SD
                 {
                     audioPlayers[i].volume = maxVolume;
                 }
-                audioPlayers[i].Play();
                 audioPlayers[i].loop = true;
+                // Start the audio.
+                audioPlayers[i].Play();
 
                 // If the audio player isn't the first one (playing the first track),
                 // then reduce its volume to 0.
@@ -82,9 +81,6 @@ namespace SD
 
             // Get a reference to the object that we will be using.
             ratioScalingSource = FindObjectOfType<Timer>();
-            // Get and store the value of the maximal amount of whatever units
-            // that we will use for ratio calculations.
-            totalUnits = ratioScalingSource.GetMaxTimeInGame();
         }
 
         void Update()
@@ -103,18 +99,20 @@ namespace SD
 
             // Current implementation uses the time in the game and splits it evenly into chunks for calculations.
             float remainingUnits = ratioScalingSource.GetTimeRemaining();
-            float fishConsumedRatio = 1.0f - (float)remainingUnits / (float)totalUnits;
+            float currentRatio = 1.0f - remainingUnits / ratioScalingSource.GetMaxTimeInGame();
+
+            //Debug.Log("Time remaining: " + remainingUnits + "/" + ratioScalingSource.GetMaxTimeInGame() + "  current/thresh:" + currentRatio / ratioThresholdPerTransition);
 
             // This variable is initally -1 at the start of the game
             // and goes up in steps of 1 up to the max number of sound tracks.
-            int transitionIndexID = Mathf.FloorToInt(fishConsumedRatio / ratioThresholdPerTransition) - 1;
+            int transitionIndexID = Mathf.FloorToInt(currentRatio / ratioThresholdPerTransition) - 1;
 
             // If we have a ratio bigger than the ratio that would trigger a transition,
             // check if we need to start a transition.
             if (transitionIndexID >= 0 && transitionIndexID < transitionCount && !transitionsStarted[transitionIndexID])
             {
                 // Get the transition that we would be doing given the ratios.
-                //Debug.Log("TransitionID: " + transitionIndexID);
+                Debug.Log("TransitionID: " + transitionIndexID);
 
                 // Now check to see if we have started a transition given the ID.
                 // Start it if we haven't.
@@ -122,6 +120,8 @@ namespace SD
                     transitionsStarted[transitionIndexID] == false)
                 {
                     transitionsStarted[transitionIndexID] = true;
+                    // Start playing the second track.
+                    audioPlayers[transitionIndexID + 1].Play();
                     StartCoroutine(AudioCrossfade(transitionIndexID));
                 }
             }
@@ -137,7 +137,7 @@ namespace SD
         /// <returns></returns>
         private IEnumerator AudioCrossfade(int transitionIndex)
         {
-            //Debug.Log("AudioCrossfade async called.");
+            Debug.Log("AudioCrossfade async called.");
 
             bool transitionTimeElapsed = false;
             float fadeTimeRemaining = 0.0f;

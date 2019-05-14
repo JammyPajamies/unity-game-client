@@ -62,7 +62,6 @@ namespace SD
         
         // Audio
         private AudioSource intialBoostAudioSource;
-        private AudioSource continuedBoostAudioSource;
 
         // Animations
         public string slowSpeedSwimStateName;
@@ -83,9 +82,7 @@ namespace SD
             gameController.SetStaminaDelay(timeBetweenStaminaRecovery);
 
             fishAnimator = GetComponentInChildren<Animator>();
-            var aSources = GetComponents<AudioSource>();
-            intialBoostAudioSource = aSources[0];
-            continuedBoostAudioSource = aSources[1];
+            intialBoostAudioSource = GetComponent<AudioSource>();
 
             playerModel = transform.Find("Model").gameObject;
             facingRight = true;
@@ -210,12 +207,11 @@ namespace SD
             if (justStartedBoosting)
             {
                 intialBoostAudioSource.PlayOneShot(intialBoostAudioSource.clip);
-                continuedBoostAudioSource.PlayDelayed(0.75f);
                 justStartedBoosting = false;
             }
             if (!isBoosting)
             {
-                continuedBoostAudioSource.Stop();
+                //continuedBoostAudioSource.Stop();
             }
 
             // Handle animation transitions.

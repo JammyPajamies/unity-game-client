@@ -39,7 +39,7 @@ namespace SD {
 
         public Boundary boundary;
         public List<Rigidbody> playerPrefabs;
-        public Rigidbody opponent;
+        public List<Rigidbody> opponentPrefabs;
         public Rigidbody playerBase;
         public Rigidbody opponentBase;
         private Vector3 playerInitialPosition = new Vector3(-100,0,0);
@@ -153,8 +153,18 @@ namespace SD {
 
             //Debug.Log("Prey fish to start with: " + preyFishTotal);
 
-            if (SDMain.networkManager != null) {  // We are playing multiplayer
-                rbOpponent = (Rigidbody)Instantiate (opponent, opponentInitialPosition, opponentInitialRotation);
+            if (SDMain.networkManager != null)
+            {
+                // We are playing multiplayer
+                // Spawn the appropriate opponent based on the character selection screen.
+                if (FindObjectOfType<SDPersistentData>() != null)
+                {
+                    rbOpponent = Instantiate(opponentPrefabs[FindObjectOfType<SDPersistentData>().GetOpponentFishSelectionIndex()], opponentInitialPosition, opponentInitialRotation);
+                }
+                else
+                {
+                    rbOpponent = Instantiate(opponentPrefabs[0], opponentInitialPosition, opponentInitialRotation);
+                }
                 rbOpponent.gameObject.SetActive (true);
                 opponentPlayer = new PlayTimePlayer ();
                 opponentPlayer.speedUpFactor = playerClone.GetComponent<PlayerController>().staminaSpeedBoostFactor;
@@ -254,7 +264,7 @@ namespace SD {
                 //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
-            Debug.Log("Insantiating fish from index: " + preyIndex);
+            //Debug.Log("Insantiating fish from index: " + preyIndex);
             npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
             npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
             npcFishObjects [i].SetActive (true);

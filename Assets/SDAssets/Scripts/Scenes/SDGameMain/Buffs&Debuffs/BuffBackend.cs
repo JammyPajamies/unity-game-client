@@ -48,15 +48,14 @@ namespace SD
         void Awake()
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.volume = 0.5f;
+            audioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
         }
 
         // Stat updates take place in LateUpdate to allow the extended buff
         // to continue using the regular Update function.
         private void LateUpdate()
         {
-            audioSource.volume = 0.5f;
-            audioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
-
             // Update and reset base stat and multiplier if buff duration has elapsed.
             if (Time.timeSinceLevelLoad > buffEndTime)
             {

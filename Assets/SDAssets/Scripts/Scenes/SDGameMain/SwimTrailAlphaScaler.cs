@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 /// <summary>
 /// This script sets the alpha level of the trails made by the player.
@@ -17,11 +18,27 @@ namespace SD
         private float speedBoostDuration = 0f;
         private bool areTrailsOn = false;
         Component[] trails;
+        
+        // Audio section.
+        // The master audio mixer.
+        public AudioMixer mainMixer;
+        public AudioClip swimmingSFX;
+        public float maxSwimmingSFXVolume = 0.25f;
+
+        private AudioSource audioPlayer;
+        private float swimSFXRatio = 0.0f;
 
         // Use this for initialization
         void Start()
         {
             playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+
+            audioPlayer = gameObject.AddComponent<AudioSource>();
+            audioPlayer.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
+            audioPlayer.playOnAwake = true;
+            audioPlayer.loop = true;
+            audioPlayer.clip = swimmingSFX;
+            audioPlayer.Play();
 
             trails = GetComponentsInChildren<TrailRenderer>();
         }
@@ -31,6 +48,7 @@ namespace SD
         {
             // Get and clamp the ratio of currentSpeed/max
             alphaRatio = Mathf.Clamp(playerController.GetCurrentToMaxSpeedRatio(), 0, maxTrailAlpha);
+            swimSFXRatio = Mathf.Clamp(playerController.GetCurrentToMaxSpeedRatio(), 0, maxSwimmingSFXVolume);
 
             // Go through and adjust the alpha level on the trails.
             foreach (TrailRenderer trail in trails)
@@ -41,6 +59,7 @@ namespace SD
                     alphaRatio,
                     alphaRatio));
             }
+            audioPlayer.volume = swimSFXRatio;
         }
 
         [ExecuteInEditMode]
