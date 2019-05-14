@@ -39,7 +39,7 @@ namespace SD {
 
         public Boundary boundary;
         public List<Rigidbody> playerPrefabs;
-        public Rigidbody opponent;
+        public List<Rigidbody> opponentPrefabs;
         public Rigidbody playerBase;
         public Rigidbody opponentBase;
         private Vector3 playerInitialPosition = new Vector3(-100,0,0);
@@ -153,8 +153,18 @@ namespace SD {
 
             //Debug.Log("Prey fish to start with: " + preyFishTotal);
 
-            if (SDMain.networkManager != null) {  // We are playing multiplayer
-                rbOpponent = (Rigidbody)Instantiate (opponent, opponentInitialPosition, opponentInitialRotation);
+            if (SDMain.networkManager != null)
+            {
+                // We are playing multiplayer
+                // Spawn the appropriate opponent based on the character selection screen.
+                if (FindObjectOfType<SDPersistentData>() != null)
+                {
+                    rbOpponent = Instantiate(opponentPrefabs[FindObjectOfType<SDPersistentData>().GetOpponentFishSelectionIndex()], opponentInitialPosition, opponentInitialRotation);
+                }
+                else
+                {
+                    rbOpponent = Instantiate(opponentPrefabs[0], opponentInitialPosition, opponentInitialRotation);
+                }
                 rbOpponent.gameObject.SetActive (true);
                 opponentPlayer = new PlayTimePlayer ();
                 opponentPlayer.speedUpFactor = playerClone.GetComponent<PlayerController>().staminaSpeedBoostFactor;
@@ -266,7 +276,6 @@ namespace SD {
 
             // Displays bubbles when destroying prey
             Instantiate (bubbles, playerClone.transform.position, Quaternion.identity);
-            StartCoroutine( destroyBubbles() );
 
             // Modify the clone to your heart's content
             if (npcFishObjects [i] != null) {
@@ -275,15 +284,6 @@ namespace SD {
                 ReducePreyFishRemaining();
                 npcFishes [i].isAlive = false;
             }
-        }
-
-        /// <summary>
-        /// Destroies the bubbles invoked by destroyPrey()
-        /// </summary
-        /// <returns>Destroys bubbles after 5 seconds</returns>
-        IEnumerator destroyBubbles(){
-            yield return new WaitForSeconds (5);
-            Destroy (GameObject.FindGameObjectWithTag("Bubbles"));
         }
 
         // Spawns 'num' Npc fish of type 'speciesId'

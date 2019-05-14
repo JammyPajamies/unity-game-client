@@ -8,6 +8,8 @@ namespace SD {
         private int playerFinalScore;
         // -1 = error, 0 = mackeral, 1 = striped bass, 2 = barracuda
         private int playerFishSelectionIndex = 0;
+        // -1 = error, 0 = mackeral, 1 = striped bass, 2 = barracuda
+        private int opponentFishSelectionIndex = 0;
         private int roundsCompleted;
         private bool isGameCompleted;
         private int winningScore;
@@ -83,6 +85,16 @@ namespace SD {
         public void SetPlayerFishSelectionIndex(int fish)
         {
             playerFishSelectionIndex = fish;
+        }
+
+        public int GetOpponentFishSelectionIndex()
+        {
+            return opponentFishSelectionIndex;
+        }
+
+        public void SetOpponentFishSelectionIndex(int fish)
+        {
+            opponentFishSelectionIndex = fish;
         }
 
         public int getPlayerFinalScore() {
