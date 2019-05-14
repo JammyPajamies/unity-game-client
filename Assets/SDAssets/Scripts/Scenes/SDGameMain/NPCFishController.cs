@@ -12,6 +12,7 @@ namespace SD
         Rigidbody rb;
         public Boundary boundary;
         public Vector2 current { get; set; }
+        public float speedFactor = 1.0f;
         //public Vector2 target { get; set; }
 
         float fTime = 0;
@@ -38,8 +39,8 @@ namespace SD
 
         public void MoveToTarget()
         {
-            // Move to wherever it is told to.
-            transform.position = Vector2.Lerp(transform.position, npcFish.target, Time.fixedDeltaTime);
+            // Move to wherever it is told to. Scale by speedFactor to make it slower or faster.
+            transform.position = Vector2.Lerp(transform.position, npcFish.target * speedFactor, Time.fixedDeltaTime);
 
             if (npcFish.isAttacking) {
                 Vector3 relativePos = new Vector3 (GameController.getInstance().getTargetPlayer().xPosition, GameController.getInstance ().getTargetPlayer ().yPosition, 0);

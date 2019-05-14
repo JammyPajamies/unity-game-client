@@ -24,6 +24,9 @@ public class SDIndexSelection : MonoBehaviour {
         }
         //sets active to true for the character at a specific index; model will appear
         characters[selectionIndex].SetActive(true);
+
+        // Set the default fish selected to be the mackeral.
+        FindObjectOfType<SD.SDPersistentData>().SetPlayerFishSelectionIndex(selectionIndex);
     }
 
     //function handles with selecting and swapping the models
