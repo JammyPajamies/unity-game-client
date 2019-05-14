@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 namespace SD
 {
-    public class TrailController : MonoBehaviour
+    public class BuffTrailController : MonoBehaviour
     {
         private GameController gameController;
         private float speedBoostDuration = 0f;

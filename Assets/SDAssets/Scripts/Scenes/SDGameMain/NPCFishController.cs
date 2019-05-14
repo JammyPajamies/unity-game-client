@@ -13,6 +13,7 @@ namespace SD
         public Boundary boundary;
         public Vector2 current { get; set; }
         public float speedFactor = 1.0f;
+        public int baseSpeed = 15;
         //public Vector2 target { get; set; }
 
         float fTime = 0;
@@ -39,18 +40,20 @@ namespace SD
 
         public void MoveToTarget()
         {
-            // Move to wherever it is told to. Scale by speedFactor to make it slower or faster.
-            transform.position = Vector2.Lerp(transform.position, npcFish.target * speedFactor, Time.fixedDeltaTime);
+            // Move to where ever it is told to. Scale by speedFactor to make it slower or faster.
+            Vector2 transformVecTwo = new Vector2(transform.position.x, transform.position.y);
+            transform.position = Vector2.Lerp(transform.position, transformVecTwo + (npcFish.target - transformVecTwo) * speedFactor, Time.fixedDeltaTime);
+            //Debug.Log(transform.position.ToString() + " (" + npcFish.target.x + ", " + npcFish.target.y + ")");
 
             if (npcFish.isAttacking) {
                 Vector3 relativePos = new Vector3 (GameController.getInstance().getTargetPlayer().xPosition, GameController.getInstance ().getTargetPlayer ().yPosition, 0);
                 //Quaternion rotation = Quaternion.LookRotation (relativePos); // face the player to be attacked
                 //transform.rotation = rotation;
                 if (npcFish.target.x <= transform.position.x) {  // swim in the right direction.
-                    npcFish.targetOffset = -20;
+                    npcFish.targetOffset = -baseSpeed;
                     transform.rotation = Quaternion.Euler (transform.rotation.eulerAngles.x, 270, transform.rotation.eulerAngles.z);
                 } else {
-                    npcFish.targetOffset = 20;
+                    npcFish.targetOffset = baseSpeed;
                     transform.rotation = Quaternion.Euler (transform.rotation.eulerAngles.x, 90, transform.rotation.eulerAngles.z);
                 }
             }
@@ -60,10 +63,10 @@ namespace SD
                 npcFish.yPosition = transform.position.y;
             } else { // we are not relying on collision for changing direction of the fishes for the second player. 
                 if (npcFish.target.x < transform.position.x) { // moving towards the left
-                    npcFish.targetOffset = -20;
+                    npcFish.targetOffset = -baseSpeed;
                     transform.rotation = Quaternion.Euler (0, 270, 0);
                 } else {
-                    npcFish.targetOffset = 20;
+                    npcFish.targetOffset = baseSpeed;
                     transform.rotation = Quaternion.Euler (0, 90, 0);
                 }
             }
