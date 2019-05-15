@@ -73,10 +73,14 @@ namespace SD
         /// <param name="r"></param>
         public void ResponseSDStartSync(NetworkResponse r)
         {
-            ResponseSDPlayerPosition response = r as ResponseSDPlayerPosition;
-            Debug.Log("The opponent is ready to play, loading the game scene.");
-            this.isOpponentReady = true;
-            ReadyCheck();
+            // Only need to run this stuff once, so check if isOpponentReady has already been set to true.
+            if (!isOpponentReady)
+            {
+                ResponseSDPlayerPosition response = r as ResponseSDPlayerPosition;
+                Debug.Log("The opponent is ready to play, loading the game scene.");
+                this.isOpponentReady = true;
+                ReadyCheck();
+            }
         }
 
         /// <summary>
@@ -97,12 +101,14 @@ namespace SD
         {
             playerReadyButton.interactable = false;
             readySceneButton.interactable = false;
-            playerReadyButton.GetComponent<Image>().color = new Color(0f, 0.5f, 1f, 1.0f);
-            readySceneButton.GetComponent<Image>().color = new Color(1f, 0f, 0f, 1.0f);
+
+            playerReadyButton.GetComponent<Image>().color = new Color(0f, 0.5f, 1f, 1f);
+            readySceneButton.GetComponent<Image>().color = new Color(1f, 0f, 0f, 1f);
 
             // If we are in multiplayer, signal to the other player that we are ready.
             // Call the function to transition into the game.
-            if (SDMain.networkManager != null)
+            // Only need to run this stuff once, so check if isPlayerReady has already been set to true.
+            if (SDMain.networkManager != null && !isPlayerReady)
             {
                 SDMain.networkManager.Send(SDStartGameProtocol.Prepare(Constants.USER_ID));
                 isPlayerReady = true;

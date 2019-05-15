@@ -34,7 +34,8 @@ namespace SD
         }
         void FixedUpdate()
         {
-            MoveToTarget();
+            if (GameController.getInstance().getIsGameTimeTicking())
+                MoveToTarget();
         }
 
 
@@ -90,16 +91,24 @@ namespace SD
         }
 
         void OnTriggerEnter(Collider other) {
-            if (Constants.PLAYER_NUMBER != 2) {
-                if (other.CompareTag ("Player") || other.CompareTag ("Opponent"))
-                    return;
-                npcFish.targetOffset = -npcFish.targetOffset;  // begin to move in the opposite direction.
-                if (npcFish.targetOffset < 0) {
-                    // moving towards the left.
-                    transform.rotation = Quaternion.Euler (0, 270, 0);
-                } else {
-                    // moving towards the right.
-                    transform.rotation = Quaternion.Euler (0, 90, 0);
+
+            if (GameController.getInstance().getIsGameTimeTicking())
+            {
+                if (Constants.PLAYER_NUMBER != 2)
+                {
+                    if (other.CompareTag("Player") || other.CompareTag("Opponent"))
+                        return;
+                    npcFish.targetOffset = -npcFish.targetOffset;  // begin to move in the opposite direction.
+                    if (npcFish.targetOffset < 0)
+                    {
+                        // moving towards the left.
+                        transform.rotation = Quaternion.Euler(0, 270, 0);
+                    }
+                    else
+                    {
+                        // moving towards the right.
+                        transform.rotation = Quaternion.Euler(0, 90, 0);
+                    }
                 }
             }
         }

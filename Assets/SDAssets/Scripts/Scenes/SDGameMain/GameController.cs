@@ -83,8 +83,7 @@ namespace SD {
         private int pointBonus = 0;
 
         // Prey fish count and max.
-        private int preyFishRemaining = 0;
-        private int preyFishTotal = 0;
+        private int preyFishConsumed = 0;
 
         // The fade in and out transitions for the scene.
         public Animator fadeOutAnimator;
@@ -131,25 +130,28 @@ namespace SD {
                 NPCFish npcFish = new NPCFish (i);
                 npcFishes [i] = npcFish;
                 maxPreyId = i;
-                if (SDMain.networkManager != null) {
+                if (SDMain.networkManager != null)
+                {
                     sdGameManager.FindNPCFishPosition (i); // Finds and spawns prey at the returned location.
-                } else {
+                }
+                else
+                {
                     int randomFishIndex = Random.Range(0, ingameNPCFishPrefabsArray.Length);
                     //Debug.Log("Spawning fish with index id: " + randomFishIndex);
-                    spawnPrey (i, randomFishIndex);
+                    spawnPrey(i, randomFishIndex);
                 }
-                
+
                 // After spawning the fish, get the number of prey fish.
                 // Prey fish are fish that the players are able to consume.
+                /*
                 if(npcFishObjects[i].tag == "PlayerPrey" ||
                     npcFishObjects[i].tag == "SpeedBuffFish" ||
                     npcFishObjects[i].tag == "PointBuffFish")
                 {
                     preyFishTotal++;
                 }
+                */
             }
-            // Initialize remaining to total.
-            preyFishRemaining = preyFishTotal;
 
             //Debug.Log("Prey fish to start with: " + preyFishTotal);
 
@@ -258,10 +260,10 @@ namespace SD {
             Vector3 spawnPosition;
             if (npcFishes [i].xPosition != 0 && npcFishes [i].yPosition != 0) {
                 spawnPosition = new Vector3 (npcFishes [i].xPosition, npcFishes [i].yPosition, npcFishes[i].xRotationAngle);
-                //Debug.Log ("Spawning NPCFish " + i + " from request result");
+                Debug.Log ("Spawning NPCFish " + i + " from request result");
             } else {
                 spawnPosition = new Vector3 (Random.Range(boundary.xMin, boundary.xMax), Random.Range(boundary.yMin, boundary.yMax), 0);
-                //Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
+                Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
             }
             Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
             //Debug.Log("Insantiating fish from index: " + preyIndex);
@@ -500,23 +502,16 @@ namespace SD {
             return npcFishObjects;
         }
 
-        // Return the initial number of prey fish spawned.
-        public int GetPreyFishTotal()
-        {
-            return preyFishTotal;
-        }
-
         // Return the number of prey fish remaining in the scene.
-        public int GetPreyFishRemaining()
+        public int GetPreyFishConsumed()
         {
-            return preyFishRemaining;
+            return preyFishConsumed;
         }
 
-        // Reduce the number of prey fish remaining by 1.
+        // Increase the number of fish consumed by 1.
         public void ReducePreyFishRemaining()
         {
-            preyFishRemaining--;
-            //Debug.Log("Prey fish remaining: " + preyFishRemaining + " out of: " + preyFishTotal);
+            preyFishConsumed++;
         }
 
         public void showCountdownPanel(){
