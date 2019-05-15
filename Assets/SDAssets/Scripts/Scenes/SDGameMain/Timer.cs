@@ -25,6 +25,9 @@ namespace SD {
         private static SDPersistentData sdPersistentData;
         private bool hasTimerStarted;
 
+        // The fade in and out transitions for the scene.
+        public Animator fadeOutAnimator;
+
         public void Start(){
             timeText.text = "Time: " +time.ToString ();
             sdGameManager = GameManager.getInstance ();
@@ -67,6 +70,10 @@ namespace SD {
                     //timeText.text = "Time's Up!";
                     panelTimesUp.SetActive (true);
                     sdGameController.setIsGameTimeTicking (false);
+                    // Find the audio mixer and ask it to fade out.
+                    StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
+                    // Fade out the screen.
+                    fadeOutAnimator.SetTrigger("FadeOut");
                     StartCoroutine (EndCurrentRound ());
                 }
             }
