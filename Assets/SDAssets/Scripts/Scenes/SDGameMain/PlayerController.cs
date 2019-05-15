@@ -182,9 +182,7 @@ namespace SD
                 }
 
                 // Clamp the player's position to within the playable area.
-                rb.position = new Vector3(Mathf.Clamp(rb.position.x, boundary.xMin, boundary.xMax),
-                                          Mathf.Clamp(rb.position.y, boundary.yMin, boundary.yMax),
-                                          0.0f);
+                rb.position = new Vector3(Mathf.Clamp(rb.position.x, boundary.xMin, boundary.xMax), Mathf.Clamp(rb.position.y, boundary.yMin, boundary.yMax), 0.0f);
 
             }
 
