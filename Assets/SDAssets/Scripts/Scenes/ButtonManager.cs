@@ -13,27 +13,42 @@ public class ButtonManager : MonoBehaviour
 
     private AudioSource audioSource;
 
-	void Start ()
+    private static ButtonManager buttonManager;
+
+    private void Awake()
+    {
+        buttonManager = this;
+    }
+
+    void Start ()
     {
         Random.InitState(System.DateTime.Now.Millisecond);
         audioSource = gameObject.GetComponent<AudioSource>();
-	}
+    }
+
+    public static ButtonManager GetInstance()
+    {
+        return buttonManager;
+    }
 
     // Play a random sound on mouseover.
     public void BtnPlayMouseoverSound()
     {
+        audioSource = gameObject.GetComponent<AudioSource>();
         audioSource.PlayOneShot(mouseoverSounds[Random.Range(0, (mouseoverSounds.Count))]);
     }
 
     // Play button click sound on mouse down.
     public void BtnPlayButtonClickSound()
     {
+        audioSource = gameObject.GetComponent<AudioSource>();
         audioSource.PlayOneShot(buttonClickSounds[Random.Range(0, (buttonClickSounds.Count))]);
     }
 
     // Play button click sound on transition screen.
     public void BtnPlaySceneTransitionSound()
     {
+        audioSource = gameObject.GetComponent<AudioSource>();
         audioSource.PlayOneShot(transistionSounds[Random.Range(0, (transistionSounds.Count))]);
     }
 }

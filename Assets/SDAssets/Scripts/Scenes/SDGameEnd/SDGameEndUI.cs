@@ -16,7 +16,7 @@ namespace SD {
         public void BtnPlayAgainClick() {
             // Start another round of the game with the same players.
             SceneManager.LoadScene("SDReadyScene");
-            persistentObject = SDPersistentData.getInstance();
+            persistentObject = SDPersistentData.GetInstance();
             if (persistentObject) 
                 persistentObject.initializeData ();
         }

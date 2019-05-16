@@ -1,7 +1,7 @@
 ﻿/* 
  * File Name: GameController.cs
  * Description: Main script for the demo.
- */ 
+ */
 
 
 using UnityEngine;
@@ -9,8 +9,10 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace SD {
-    public class GameController : MonoBehaviour {
+namespace SD
+{
+    public class GameController : MonoBehaviour
+    {
 
         public GameObject Prey;
         public Vector3 spawnValue;
@@ -21,7 +23,7 @@ namespace SD {
         public int numPrey;
 
         public Text scoreText;
-        public Text UnscoredPointText; 
+        public Text UnscoredPointText;
         public Text staminaText;
         public Text healthText;
         public Text opponentScoreText;
@@ -36,30 +38,29 @@ namespace SD {
         private float staminaRecoveryRate = 10f;
         private float staminaRecoveryDelay;
         private float staminaBeginRecoverTime = 0.0f;
+        private int playerStomachSize = 0;
 
         public Boundary boundary;
         public List<Rigidbody> playerPrefabs;
         public List<Rigidbody> opponentPrefabs;
         public Rigidbody playerBase;
         public Rigidbody opponentBase;
-        private Vector3 playerInitialPosition = new Vector3(-100,0,0);
-        private Quaternion playerInitialRotation = Quaternion.Euler(0,0,0);
-        //private Quaternion playerInitialRotation = Quaternion.Euler(0, 90, 0); // Default old values.
-        private Vector3 opponentInitialPosition = new Vector3 (100, 0, 0);
-        //private Quaternion opponentInitialRotation = Quaternion.Euler (0, -90, 0); // Default old values.
-        private Quaternion opponentInitialRotation = Quaternion.Euler(0, 0, 0);
-        private Vector3 playerBaseInitialPosition = new Vector3(-260,0,0);
-        private Quaternion playerBaseInitialRotation = Quaternion.Euler(0,0,0);
-        private Vector3 opponentBaseInitialPosition = new Vector3(260,0,0);
-        private Quaternion opponentBaseInitialRotation = Quaternion.Euler(0,0,0);
+        private Vector3 playerInitialPosition;
+        private Quaternion playerInitialRotation;
+        private Vector3 opponentInitialPosition;
+        private Quaternion opponentInitialRotation;
+        private Vector3 playerBaseInitialPosition;
+        private Quaternion playerBaseInitialRotation;
+        private Vector3 opponentBaseInitialPosition;
+        private Quaternion opponentBaseInitialRotation;
 
         private static GameController gameController;
         private static GameManager sdGameManager;
         private PlayTimePlayer currentPlayer;
         private PlayTimePlayer opponentPlayer;
         private Rigidbody rbOpponent;
-        private Dictionary <int, NPCFish> npcFishes = new Dictionary<int, NPCFish>();
-        private Dictionary <int, GameObject> npcFishObjects = new Dictionary<int, GameObject>();
+        private Dictionary<int, NPCFish> npcFishes = new Dictionary<int, NPCFish>();
+        private Dictionary<int, GameObject> npcFishObjects = new Dictionary<int, GameObject>();
         private int maxPreyId;
         private bool hasSurrendered;
         private bool isGameTimeTicking = false;
@@ -91,16 +92,166 @@ namespace SD {
 
         Rigidbody playerClone;
 
-        void Awake () {
+        void Awake()
+        {
             gameController = this;
         }
         // Initializes the player's score, and UI texts.
         // Also spawns numbers of prey at random positions.
-        void Start () {
-            
-            if (Constants.PLAYER_NUMBER == 2) {  // The player who joins the host will have a different position to start from.
-                swapPositions();
+        void Start()
+        {
+            // Setup the positions and rotations of player and opponent bases.
+            SetupInitialPlayerLocationsAndBases();
+
+            score = 0;
+            hasSurrendered = false;
+            opponentScore = 0;
+            unscoredPoint = 0;
+            UpdateScoreText();
+            UpdateOpponentScoreText();
+            UpdateStaminaText();
+            UpdateUnscoredPointText();
+            UpdateHealthText();
+
+            sdGameManager = SD.GameManager.getInstance();
+            currentPlayer = new PlayTimePlayer();
+
+            for (int i = 1; i <= numPrey; i++)
+            {
+                NPCFish npcFish = new NPCFish(i);
+                npcFishes[i] = npcFish;
+                maxPreyId = i;
+                if (SDMain.networkManager != null)
+                {
+                    sdGameManager.FindNPCFishPosition(i); // Finds and spawns prey at the returned location.
+                }
+                else
+                {
+                    int randomFishIndex = Random.Range(0, ingameNPCFishPrefabsArray.Length);
+                    //Debug.Log("Spawning fish with index id: " + randomFishIndex);
+                    spawnPrey(i, randomFishIndex);
+                }
             }
+
+            //Debug.Log("Prey fish to start with: " + preyFishTotal);
+
+            if (SDMain.networkManager != null)
+            {
+                isGameTimeTicking = false; // Wait for time sync if in multiplayer mode
+                gameController.countdownPanelCanvas.SetActive(true);
+            }
+            else
+            {
+                isGameTimeTicking = true; // Start the timer immediately if in offline mode
+                gameController.countdownPanelCanvas.SetActive(false);
+            }
+
+            // Spawn the predator: 1 of type 8
+            //spawnNpcSet(8, 1);
+            //Display the food chain panel for n seconds upon game start
+            StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
+            // Find the audio mixer and ask it to fade in.
+            FindObjectOfType<MainMixerController>().FadeInAudio();
+            // Finally, fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
+        }
+
+
+        /// <summary>
+        /// Shows the food chain upon start.
+        /// </summary>
+        /// <param name="seconds">Duration to show the food chain panel</param>
+        IEnumerator showFoodChainUponStart(int seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            hideFoodChainPanel();
+        }
+
+        // Automatically recovers stamina, and refreshs staminaText UI every frame.
+        void Update()
+        {
+            if (getIsGameTimeTicking())
+            {
+                if (Constants.PLAYER_NUMBER != 2)
+                {
+                    // The player who joins the host will have a different position to start from.
+                    StartCoroutine(RetargetFish()); // TODO: Move coroutine out of Update() into a while loop
+                }
+                RecoverStamina();
+                UpdateStaminaText();
+                UpdateUnscoredPointText();
+                UpdateOpponentScoreText();
+                UpdateHealthText();
+                if (health <= 0)
+                {
+                    deathPanelCanvas.SetActive(true);
+                    this.health = 0;
+                    // Find the audio mixer and ask it to fade out.
+                    FindObjectOfType<MainMixerController>().FadeOutAudio();
+                    // Fade out the screen.
+                    fadeOutAnimator.SetTrigger("FadeOut");
+                    StartCoroutine(goToResultScene());
+                    playerClone.transform.localScale = new Vector3(0, 0, 0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This is invoked by Update() when the player's health gets 0
+        /// and automaticaly ends the game
+        /// </summary>
+        IEnumerator goToResultScene()
+        {
+            yield return new WaitForSeconds(3);
+            BtnSurrenderClick();
+        }
+
+
+        public static GameController getInstance()
+        {
+            return gameController;
+        }
+
+        /// <summary>
+        /// Sets up opponent model and base locations.
+        /// </summary>
+        private void SetupInitialPlayerLocationsAndBases()
+        {
+
+            bool playerIsOnLeftSide = true;
+            // Check player id.
+            // If we are player2 aka client, then the enemy will face the left.
+            // Otherwise, they face right.
+            if (Constants.PLAYER_NUMBER % 2 == 0)
+            {
+                playerIsOnLeftSide = false;
+            }
+
+            // Check which side the player is spawning on, set rotations and positions accordingly.
+            if (playerIsOnLeftSide)
+            {
+                playerInitialPosition = new Vector3(-100, 0, 0);
+                playerInitialRotation = Quaternion.Euler(0, 0, 0);
+                opponentInitialPosition = new Vector3(100, 0, 0);
+                opponentInitialRotation = Quaternion.Euler(0, 180, 0);
+                playerBaseInitialPosition = new Vector3(-260, 0, 0);
+                opponentBaseInitialPosition = new Vector3(260, 0, 0);
+            }
+            else
+            {
+                playerInitialPosition = new Vector3(100, 0, 0);
+                playerInitialRotation = Quaternion.Euler(0, 180, 0);
+                opponentInitialPosition = new Vector3(-100, 0, 0);
+                opponentInitialRotation = Quaternion.Euler(0, 0, 0);
+                playerBaseInitialPosition = new Vector3(260, 0, 0);
+                opponentBaseInitialPosition = new Vector3(-260, 0, 0);
+            }
+
+            // Player base rotations are just volumes in space, but this will allow future implementations of
+            // graphically different bases.
+            playerBaseInitialRotation = Quaternion.Euler(0, 0, 0);
+            opponentBaseInitialRotation = Quaternion.Euler(0, 0, 0);
+
             // Spawn the appropriate player based on the character selection screen.
             if (FindObjectOfType<SDPersistentData>() != null)
             {
@@ -111,53 +262,11 @@ namespace SD {
             {
                 playerClone = Instantiate(playerPrefabs[0], playerInitialPosition, playerInitialRotation);
             }
-            Rigidbody playerBaseClone = Instantiate (playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
-            Rigidbody opponentBaseClone = Instantiate (opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
-            score = 0;
-            hasSurrendered = false;
-            opponentScore = 0;
-            unscoredPoint = 0; 
-            UpdateScoreText ();
-            UpdateOpponentScoreText ();
-            UpdateStaminaText ();
-            UpdateUnscoredPointText ();
-            UpdateHealthText ();
+            playerStomachSize = PlayerController.GetInstance().GetStomachSize();
 
-            sdGameManager = SD.GameManager.getInstance ();
-            currentPlayer = new PlayTimePlayer ();
-
-            for (int i = 1; i <= numPrey; i++) {
-                NPCFish npcFish = new NPCFish (i);
-                npcFishes [i] = npcFish;
-                maxPreyId = i;
-                if (SDMain.networkManager != null)
-                {
-                    sdGameManager.FindNPCFishPosition (i); // Finds and spawns prey at the returned location.
-                }
-                else
-                {
-                    int randomFishIndex = Random.Range(0, ingameNPCFishPrefabsArray.Length);
-                    //Debug.Log("Spawning fish with index id: " + randomFishIndex);
-                    spawnPrey(i, randomFishIndex);
-                }
-
-                // After spawning the fish, get the number of prey fish.
-                // Prey fish are fish that the players are able to consume.
-                /*
-                if(npcFishObjects[i].tag == "PlayerPrey" ||
-                    npcFishObjects[i].tag == "SpeedBuffFish" ||
-                    npcFishObjects[i].tag == "PointBuffFish")
-                {
-                    preyFishTotal++;
-                }
-                */
-            }
-
-            //Debug.Log("Prey fish to start with: " + preyFishTotal);
-
+            // Spawn opponent after we check if we are in multiplayer.
             if (SDMain.networkManager != null)
             {
-                // We are playing multiplayer
                 // Spawn the appropriate opponent based on the character selection screen.
                 if (FindObjectOfType<SDPersistentData>() != null)
                 {
@@ -167,246 +276,211 @@ namespace SD {
                 {
                     rbOpponent = Instantiate(opponentPrefabs[0], opponentInitialPosition, opponentInitialRotation);
                 }
-                rbOpponent.gameObject.SetActive (true);
-                opponentPlayer = new PlayTimePlayer ();
-                opponentPlayer.speedUpFactor = playerClone.GetComponent<PlayerController>().staminaSpeedBoostFactor;
+                rbOpponent.gameObject.SetActive(true);
+                opponentPlayer = new PlayTimePlayer();
+                //opponentPlayer.speedUpFactor = playerClone.GetComponent<PlayerController>().staminaSpeedBoostFactor;
                 opponentPlayer.yRotation = opponentInitialRotation.eulerAngles.y;
-                isGameTimeTicking = false; // Wait for time sync if in multiplayer mode
-                gameController.countdownPanelCanvas.SetActive (true);
-            } else {
-                isGameTimeTicking = true; // Start the timer immediately if in offline mode
-                gameController.countdownPanelCanvas.SetActive (false);
             }
 
-            // Spawn the predator: 1 of type 8
-            //spawnNpcSet(8, 1);
-            //Display the food chain panel for n seconds upon game start
-            StartCoroutine(showFoodChainUponStart(foodChainPanelVisibleSeconds));
-            // Find the audio mixer and ask it to fade in.
-            StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
-            // Finally, fade in the screen.
-            fadeInAnimator.SetTrigger("FadeIn");
-        }
-
-      
-        /// <summary>
-        /// Shows the food chain upon start.
-        /// </summary>
-        /// <param name="seconds">Duration to show the food chain panel</param>
-        IEnumerator showFoodChainUponStart(int seconds) {
-            yield return new WaitForSeconds (seconds);
-            hideFoodChainPanel ();
-        }
-        // Automatically recovers stamina, and refreshs staminaText UI every frame.
-        void Update() {
-            if (getIsGameTimeTicking ()) {
-                if (Constants.PLAYER_NUMBER != 2)
-                {  // The player who joins the host will have a different position to start from.
-                    StartCoroutine(RetargetFish()); // TODO: Move coroutine out of Update() into a while loop
-                }
-                RecoverStamina ();
-                UpdateStaminaText ();
-                UpdateUnscoredPointText ();
-                UpdateOpponentScoreText ();
-                UpdateHealthText ();
-                if (health <= 0) {
-                    deathPanelCanvas.SetActive (true);
-                    this.health = 0;
-                    // Find the audio mixer and ask it to fade out.
-                    StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
-                    // Fade out the screen.
-                    fadeOutAnimator.SetTrigger("FadeOut");
-                    StartCoroutine (goToResultScene ());
-                    playerClone.transform.localScale = new Vector3 (0, 0, 0);
-                }
-            }
-        }
-
-        /// <summary>
-        /// This is invoked by Update() when the player's health gets 0
-        /// and automaticaly ends the game
-        /// </summary>
-        IEnumerator goToResultScene(){
-            yield return new WaitForSeconds (3);
-            BtnSurrenderClick ();
-        }
-
-
-        public static GameController getInstance() {
-            return gameController;
-        }
-
-        // Swaps the positions and rotations of the players and bases for the opponent's view.
-        private void swapPositions() {
-            Vector3 tempV = playerInitialPosition;
-            playerInitialPosition = opponentInitialPosition;
-            opponentInitialPosition = tempV;
-
-            tempV = playerBaseInitialPosition;
-            playerBaseInitialPosition = opponentBaseInitialPosition;
-            opponentBaseInitialPosition = tempV;
-
-            Quaternion tempQ = playerInitialRotation;
-            playerInitialRotation = opponentInitialRotation;
-            opponentInitialRotation = tempQ;
-
-            tempQ = playerBaseInitialRotation;
-            playerBaseInitialRotation = opponentBaseInitialRotation;
-            opponentBaseInitialRotation = playerBaseInitialRotation;
+            // Finally, spawn the player bases.
+            Rigidbody playerBaseClone = Instantiate(playerBase, playerBaseInitialPosition, playerBaseInitialRotation);
+            Rigidbody opponentBaseClone = Instantiate(opponentBase, opponentBaseInitialPosition, opponentBaseInitialRotation);
         }
 
         // Spawns prey at a random position within the boundary
-        public void spawnPrey(int i, int preyIndex){
+        public void spawnPrey(int i, int preyIndex)
+        {
             Vector3 spawnPosition;
-            if (npcFishes [i].xPosition != 0 && npcFishes [i].yPosition != 0) {
-                spawnPosition = new Vector3 (npcFishes [i].xPosition, npcFishes [i].yPosition, npcFishes[i].xRotationAngle);
-                Debug.Log ("Spawning NPCFish " + i + " from request result");
-            } else {
-                spawnPosition = new Vector3 (Random.Range(boundary.xMin, boundary.xMax), Random.Range(boundary.yMin, boundary.yMax), 0);
-                Debug.Log ("Spawning NPCFish " + i + " from local random numbers");
+            if (npcFishes[i].xPosition != 0 && npcFishes[i].yPosition != 0)
+            {
+                spawnPosition = new Vector3(npcFishes[i].xPosition, npcFishes[i].yPosition, npcFishes[i].xRotationAngle);
+                Debug.Log("Spawning NPCFish " + i + " from request result");
             }
-            Quaternion spawnRotation = Quaternion.Euler(0, 90,0);
+            else
+            {
+                spawnPosition = new Vector3(Random.Range(boundary.xMin, boundary.xMax), Random.Range(boundary.yMin, boundary.yMax), 0);
+                //Debug.Log("Spawning NPCFish " + i + " from local random numbers");
+            }
+            Quaternion spawnRotation = Quaternion.Euler(0, 90, 0);
             //Debug.Log("Insantiating fish from index: " + preyIndex);
-            npcFishObjects [i] = Instantiate (ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
-            npcFishObjects [i].name = "NPCFish_" + preyIndex + "_" + i;
-            npcFishObjects [i].SetActive (true);
+            npcFishObjects[i] = Instantiate(ingameNPCFishPrefabsArray[preyIndex], spawnPosition, spawnRotation) as GameObject;
+            npcFishObjects[i].name = "NPCFish_" + preyIndex + "_" + i;
+            npcFishObjects[i].SetActive(true);
             // Associate the metadata of the prey with the gameobject.
             npcFishObjects[i].GetComponent<NPCFishController>().setNPCFishData(npcFishes[i]);
         }
 
-        public void destroyPrey(int i) {
+        public void destroyPrey(int i)
+        {
 
             // Displays bubbles when destroying prey
-            Instantiate (bubbles, playerClone.transform.position, Quaternion.identity);
+            Instantiate(bubbles, playerClone.transform.position, Quaternion.identity);
 
             // Modify the clone to your heart's content
-            if (npcFishObjects [i] != null) {
-                Destroy (npcFishObjects [i]);
+            if (npcFishObjects[i] != null)
+            {
+                Destroy(npcFishObjects[i]);
                 // Reduce the count of remaining prey fish.
                 ReducePreyFishRemaining();
-                npcFishes [i].isAlive = false;
+                npcFishes[i].isAlive = false;
             }
         }
 
         // Spawns 'num' Npc fish of type 'speciesId'
-        public void spawnNpcSet(int speciesId, int num) {
+        public void spawnNpcSet(int speciesId, int num)
+        {
             int startId = maxPreyId + 1;
-            for (int i = startId; i < (startId + num); i++) {
+            for (int i = startId; i < (startId + num); i++)
+            {
                 Vector3 spawnPosition;
-                NPCFish npcFish = new NPCFish (i);
-                npcFishes [i] = npcFish;
+                NPCFish npcFish = new NPCFish(i);
+                npcFishes[i] = npcFish;
                 maxPreyId = i;
                 // TODO: Change random position to out-of-screen position once the movement is added.
-                spawnPosition = new Vector3 (Random.Range(boundary.xMin, boundary.xMax), Random.Range(boundary.yMin, boundary.yMax), 0);
+                spawnPosition = new Vector3(Random.Range(boundary.xMin, boundary.xMax), Random.Range(boundary.yMin, boundary.yMax), 0);
                 // set the attributes of the npc fish to spawn.
                 npcFish.xPosition = spawnPosition.x;
                 npcFish.yPosition = spawnPosition.y;
-                npcFish.target = new Vector2 (npcFish.xPosition, npcFish.yPosition);
+                npcFish.target = new Vector2(npcFish.xPosition, npcFish.yPosition);
                 npcFish.speciesId = speciesId;
-                spawnPrey (i, speciesId);
+                spawnPrey(i, speciesId);
             }
-            if (SDMain.networkManager != null) 
-                sdGameManager.SendNpcFishPositions (5);  // Player 1 will send its positions to Player 2
+            if (SDMain.networkManager != null)
+                sdGameManager.SendNpcFishPositions(5);  // Player 1 will send its positions to Player 2
         }
 
         IEnumerator RetargetFish()
         {
             targetFish();
             if (SD.SDMain.networkManager != null)
-                sdGameManager.SendNpcFishPositions (5);
+                sdGameManager.SendNpcFishPositions(5);
             yield return new WaitForSeconds(2);
             yield return null; // prevents it from hanging ?
         }
 
         public void targetFish()
         {
-            Dictionary <int, NPCFish> npcs = getNpcFishes();
-            foreach (KeyValuePair<int, NPCFish> entry in npcs) {
-                if (!getNpcFishObjects ().ContainsKey (entry.Key))
+            Dictionary<int, NPCFish> npcs = getNpcFishes();
+            foreach (KeyValuePair<int, NPCFish> entry in npcs)
+            {
+                if (!getNpcFishObjects().ContainsKey(entry.Key))
                     continue;
-                if (entry.Value.isAlive && getNpcFishObjects()[entry.Key].tag == "Predator") {
+                if (entry.Value.isAlive && getNpcFishObjects()[entry.Key].tag == "Predator")
+                {
                     // calculate the distance to check if the player lies within the danger zone.
-                    float distanceFromPlayer = Vector2.Distance (new Vector2 (getCurrentPlayer ().xPosition, getCurrentPlayer ().yPosition), new Vector2 (entry.Value.xPosition, entry.Value.yPosition));
+                    float distanceFromPlayer = Vector2.Distance(new Vector2(getCurrentPlayer().xPosition, getCurrentPlayer().yPosition), new Vector2(entry.Value.xPosition, entry.Value.yPosition));
                     float distanceFromOpponent = float.MaxValue;
-                    if (sdGameManager.getIsMultiplayer ()) {
-                        distanceFromOpponent = Vector2.Distance (new Vector2 (getOpponentPlayer ().xPosition, getOpponentPlayer ().yPosition), new Vector2 (entry.Value.xPosition, entry.Value.yPosition));
+                    if (sdGameManager.getIsMultiplayer())
+                    {
+                        distanceFromOpponent = Vector2.Distance(new Vector2(getOpponentPlayer().xPosition, getOpponentPlayer().yPosition), new Vector2(entry.Value.xPosition, entry.Value.yPosition));
                     }
-   
-                    if (distanceFromPlayer < SD.Constants.PREDATOR_SAFE_DISTANCE || distanceFromOpponent < SD.Constants.PREDATOR_SAFE_DISTANCE) {
-                        if (distanceFromPlayer > distanceFromOpponent) {
+
+                    if (distanceFromPlayer < SD.Constants.PREDATOR_SAFE_DISTANCE || distanceFromOpponent < SD.Constants.PREDATOR_SAFE_DISTANCE)
+                    {
+                        if (distanceFromPlayer > distanceFromOpponent)
+                        {
                             // If opponent is in base, do not follow it, otherwise continue to pursue.
-                            if (getIsOpponentInBase ()) {
-                                getNpcFishes () [entry.Key].target = new Vector2 (entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
-                                getNpcFishes () [entry.Key].isAttacking = false;
-                            } else {
-                                getNpcFishes () [entry.Key].target = new Vector2 (getOpponentPlayer ().xPosition, getOpponentPlayer ().yPosition);
-                                targetPlayer = getOpponentPlayer ();
+                            if (getIsOpponentInBase())
+                            {
+                                getNpcFishes()[entry.Key].target = new Vector2(entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
+                                getNpcFishes()[entry.Key].isAttacking = false;
                             }
-                        } else {
-                            // If player is in base, do not follow it, otherwise continue to pursue.
-                            if (getIsPlayerInBase ()) {
-                                getNpcFishes () [entry.Key].target = new Vector2 (entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
-                                getNpcFishes () [entry.Key].isAttacking = false;
-                            } else {
-                                getNpcFishes () [entry.Key].target = new Vector2 (getCurrentPlayer ().xPosition, getCurrentPlayer ().yPosition);
-                                targetPlayer = getCurrentPlayer ();
+                            else
+                            {
+                                getNpcFishes()[entry.Key].target = new Vector2(getOpponentPlayer().xPosition, getOpponentPlayer().yPosition);
+                                targetPlayer = getOpponentPlayer();
                             }
                         }
-                        getNpcFishes () [entry.Key].isAttacking = true;
-                    } else {
-                        getNpcFishes () [entry.Key].target = new Vector2 (entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
-                        getNpcFishes () [entry.Key].isAttacking = false;
+                        else
+                        {
+                            // If player is in base, do not follow it, otherwise continue to pursue.
+                            if (getIsPlayerInBase())
+                            {
+                                getNpcFishes()[entry.Key].target = new Vector2(entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
+                                getNpcFishes()[entry.Key].isAttacking = false;
+                            }
+                            else
+                            {
+                                getNpcFishes()[entry.Key].target = new Vector2(getCurrentPlayer().xPosition, getCurrentPlayer().yPosition);
+                                targetPlayer = getCurrentPlayer();
+                            }
+                        }
+                        getNpcFishes()[entry.Key].isAttacking = true;
                     }
-                } else {
-                    getNpcFishes () [entry.Key].target = new Vector2 (entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
+                    else
+                    {
+                        getNpcFishes()[entry.Key].target = new Vector2(entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
+                        getNpcFishes()[entry.Key].isAttacking = false;
+                    }
+                }
+                else
+                {
+                    getNpcFishes()[entry.Key].target = new Vector2(entry.Value.xPosition + entry.Value.targetOffset, entry.Value.yPosition);
                 }
             }
         }
 
         // Increases the current score value, and pass the info to scoreText
         // by calling UpdateScore().
-        public void AddScore(int newScoreValue) {
+        public void AddScore(int newScoreValue)
+        {
             score += newScoreValue;
-            UpdateScoreText ();
+            UpdateScoreText();
             // Send the score to the opponent.
             sdGameManager.SendScoreToOpponent(score);
         }
 
         // Updates scoreText UI.
-        void UpdateScoreText () {
+        void UpdateScoreText()
+        {
             scoreText.text = "Score: " + score;
         }
 
-        public void AddUnscoredPoint(int newScoreValue) {
+        /// <summary>
+        /// Add points to the player's unscored pool, capped at the fish species' maximum.
+        /// </summary>
+        /// <param name="newScoreValue"></param>
+        public void AddUnscoredPoint(int newScoreValue)
+        {
             unscoredPoint += newScoreValue + pointBonus;
-            UpdateUnscoredPointText ();
+            if (unscoredPoint > playerStomachSize)
+            {
+                unscoredPoint = playerStomachSize;
+            }
+            UpdateUnscoredPointText();
         }
 
         // Updates UnsscoreText UI.
-        void UpdateUnscoredPointText() {
+        void UpdateUnscoredPointText()
+        {
             UnscoredPointText.text = "Unscored Point: " + unscoredPoint;
         }
 
-        void UpdateOpponentScoreText() {
+        void UpdateOpponentScoreText()
+        {
             opponentScoreText.text = "Opponent: " + opponentScore;
         }
 
-        public int GetUnscored(){
+        public int GetUnscored()
+        {
             return this.unscoredPoint;
         }
 
-        public void ResetUnscored(){
+        public void ResetUnscored()
+        {
             this.unscoredPoint = 0;
         }
 
         // Updates staminaText UI with no decimal place.
-        void UpdateStaminaText() {
+        void UpdateStaminaText()
+        {
             staminaText.text = "Stamina: " + stamina.ToString("F0");
         }
 
         // Recovers the current stamina 
-        void RecoverStamina(){
-            if(Time.fixedTime > staminaBeginRecoverTime)
+        void RecoverStamina()
+        {
+            if (Time.fixedTime > staminaBeginRecoverTime)
             {
                 stamina = stamina + staminaRecoveryRate * Time.deltaTime;
                 if (stamina >= maxStamina)
@@ -426,12 +500,14 @@ namespace SD {
         }
 
         // Returns the current stamina
-        public float GetStamina(){
+        public float GetStamina()
+        {
             return this.stamina;
         }
 
         // Sets stamina
-        public void SetStamina(float newStamina){
+        public void SetStamina(float newStamina)
+        {
             staminaBeginRecoverTime = Time.fixedTime + staminaRecoveryDelay;
             stamina = newStamina;
             if (stamina < 0.0f)
@@ -439,24 +515,28 @@ namespace SD {
         }
 
         // Sets score
-        public void SetScore(int newScore){
+        public void SetScore(int newScore)
+        {
             this.score = newScore;
         }
 
         // Adds unscored points to player's actual score
-        public void Score(){
+        public void Score()
+        {
             this.score += this.unscoredPoint;
-            UpdateScoreText ();
+            UpdateScoreText();
             // Send the score to the opponent.
             if (this.unscoredPoint != 0)  // to send the request only once.
                 sdGameManager.SendScoreToOpponent(score);
         }
 
-        public int GetHealth(){
+        public int GetHealth()
+        {
             return this.health;
         }
 
-        public void SetHealth(int newHealth){
+        public void SetHealth(int newHealth)
+        {
             this.health = newHealth;
         }
 
@@ -466,39 +546,48 @@ namespace SD {
             maxHealth = maxHP;
         }
 
-        public void UpdateHealth(int value){
+        public void UpdateHealth(int value)
+        {
             this.health = health + value;
         }
 
-        public void UpdateHealthText(){
+        public void UpdateHealthText()
+        {
             healthText.text = "Health: " + health;
         }
 
-        public void BtnSurrenderClick() {
+        public void BtnSurrenderClick()
+        {
             hasSurrendered = true;
-            sdGameManager.EndGame (false, score);
+            sdGameManager.EndGame(false, score);
         }
 
-        public Rigidbody getOpponent() {
-                return rbOpponent;
+        public Rigidbody getOpponent()
+        {
+            return rbOpponent;
         }
 
-        public PlayTimePlayer getCurrentPlayer() {
+        public PlayTimePlayer getCurrentPlayer()
+        {
             return currentPlayer;
         }
-        public PlayTimePlayer getOpponentPlayer() {
+        public PlayTimePlayer getOpponentPlayer()
+        {
             return opponentPlayer;
         }
 
-        public void setNpcFish(int i, NPCFish fish) {
-            npcFishes [i] = fish;
+        public void setNpcFish(int i, NPCFish fish)
+        {
+            npcFishes[i] = fish;
         }
 
-        public Dictionary<int, NPCFish> getNpcFishes() {
+        public Dictionary<int, NPCFish> getNpcFishes()
+        {
             return npcFishes;
         }
 
-        public Dictionary<int, GameObject> getNpcFishObjects() {
+        public Dictionary<int, GameObject> getNpcFishObjects()
+        {
             return npcFishObjects;
         }
 
@@ -514,79 +603,98 @@ namespace SD {
             preyFishConsumed++;
         }
 
-        public void showCountdownPanel(){
-            countdownPanelCanvas.SetActive (true);
+        public void showCountdownPanel()
+        {
+            countdownPanelCanvas.SetActive(true);
         }
 
-        public void hideCountdownPanel(){
-            countdownPanelCanvas.SetActive (false);
+        public void hideCountdownPanel()
+        {
+            countdownPanelCanvas.SetActive(false);
         }
 
-        public void showBaseScorePanel(){
-            baseScorePanelCanvas.SetActive (true);
+        public void showBaseScorePanel()
+        {
+            baseScorePanelCanvas.SetActive(true);
         }
 
-        public void hideBaseScorePanel(){
-            baseScorePanelCanvas.SetActive (false);
+        public void hideBaseScorePanel()
+        {
+            baseScorePanelCanvas.SetActive(false);
         }
 
-        public void hideSurrenderPanel(){
+        public void hideSurrenderPanel()
+        {
             surrenderPanelCanvas.SetActive(false);
         }
 
-        public void hideFoodChainPanel(){
+        public void hideFoodChainPanel()
+        {
             foodChainPanelCanvas.SetActive(false);
         }
 
-        public int getPlayerScore() {
+        public int getPlayerScore()
+        {
             return score;
         }
 
-        public bool getHasSurrendered() {
+        public bool getHasSurrendered()
+        {
             return hasSurrendered;
         }
 
-        public void setOpponentScore(int opScore) {
+        public void setOpponentScore(int opScore)
+        {
             opponentScore = opScore;
         }
 
-        public int getOpponentScore() {
+        public int getOpponentScore()
+        {
             return opponentScore;
         }
 
-        public bool getIsGameTimeTicking() {
+        public bool getIsGameTimeTicking()
+        {
             return isGameTimeTicking;
         }
 
-        public void setIsGameTimeTicking(bool isTicking) {
+        public void setIsGameTimeTicking(bool isTicking)
+        {
             isGameTimeTicking = isTicking;
         }
 
-        public int getMaxPreyId() {
+        public int getMaxPreyId()
+        {
             return maxPreyId;
         }
 
-        public void setTargetPlayer(PlayTimePlayer p) {
+        public void setTargetPlayer(PlayTimePlayer p)
+        {
             targetPlayer = p;
         }
 
-        public PlayTimePlayer getTargetPlayer() {
+        public PlayTimePlayer getTargetPlayer()
+        {
             return targetPlayer;
         }
 
-        public void setIsPlayerInBase(bool isInBase) {
+        public void setIsPlayerInBase(bool isInBase)
+        {
             isPlayerInBase = isInBase;
         }
 
-        public bool getIsPlayerInBase() {
+        public bool getIsPlayerInBase()
+        {
             return isPlayerInBase;
         }
 
-        public void setIsOpponentInBase(bool isInBase) {
+        public void setIsOpponentInBase(bool isInBase)
+        {
             isOpponentInBase = isInBase;
         }
 
-        public bool getIsOpponentInBase() {
+        public bool getIsOpponentInBase()
+        {
             return isOpponentInBase;
         }
 
@@ -634,6 +742,6 @@ namespace SD {
         {
             pointBonus = bonus;
         }
-    } 
+    }
 
 }

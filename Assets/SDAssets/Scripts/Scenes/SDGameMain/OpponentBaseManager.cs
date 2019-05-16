@@ -9,7 +9,7 @@ namespace SD {
         // Use this for initialization
         void Start () {
             gameController = GameController.getInstance ();
-            player = GameObject.FindGameObjectWithTag ("Player");
+            player = PlayerController.GetInstance().gameObject;
             player.GetComponent<Rigidbody> ();
         }
 
