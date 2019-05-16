@@ -38,28 +38,36 @@ namespace SD {
         }
 
         void Update() {
-            if (!hasTimerStarted && sdPersistentData != null) {
-                if (DateTime.Equals (TrimMilliseconds (DateTime.UtcNow), sdPersistentData.getRoundStartTime ())) {
-                    sdGameController.setIsGameTimeTicking (true);
-                    Debug.Log ("Starting the timer now at: " + DateTime.UtcNow);
+            if (!hasTimerStarted && sdPersistentData != null)
+            {
+                if (DateTime.Equals(TrimMilliseconds(DateTime.UtcNow), sdPersistentData.getRoundStartTime()))
+                {
+                    sdGameController.setIsGameTimeTicking(true);
+                    Debug.Log("Starting the timer now at: " + DateTime.UtcNow);
                     hasTimerStarted = true;
-                    sdGameController.countdownPanelCanvas.SetActive (false);
-                } else {
-                    double secondsToGo = (sdPersistentData.getRoundStartTime () - TrimMilliseconds (DateTime.UtcNow)).TotalSeconds;
-                    if (secondsToGo >= 0) {
-                        if (secondsToGo > maxCountdownSeconds) { // use the timer threshold in case local system clock is incorrect.
+                    sdGameController.countdownPanelCanvas.SetActive(false);
+                }
+                else
+                {
+                    double secondsToGo = (sdPersistentData.getRoundStartTime() - TrimMilliseconds(DateTime.UtcNow)).TotalSeconds;
+                    if (secondsToGo >= 0)
+                    {
+                        if (secondsToGo > maxCountdownSeconds)
+                        { // use the timer threshold in case local system clock is incorrect.
                             if (offsetDateTime == null)
-                                offsetDateTime = (TrimMilliseconds (DateTime.UtcNow)).AddSeconds(maxCountdownSeconds);
-                            secondsToGo = (offsetDateTime - TrimMilliseconds (DateTime.UtcNow)).TotalSeconds;
+                                offsetDateTime = (TrimMilliseconds(DateTime.UtcNow)).AddSeconds(maxCountdownSeconds);
+                            secondsToGo = (offsetDateTime - TrimMilliseconds(DateTime.UtcNow)).TotalSeconds;
                         }
-                        countdownText.GetComponent<Text> ().text = secondsToGo.ToString ();
+                        countdownText.GetComponent<Text>().text = secondsToGo.ToString();
+                        Debug.Log("countdowntext updated to " + secondsToGo.ToString());
                     }
-                    else {
+                    else
+                    {
                         // Start the timer anyway since it has passed the scheduled start time.
-                        sdGameController.setIsGameTimeTicking (true);
-                        Debug.Log ("Starting the timer now at: " + DateTime.UtcNow);
+                        sdGameController.setIsGameTimeTicking(true);
+                        Debug.Log("Starting the timer now at: " + DateTime.UtcNow);
                         hasTimerStarted = true;
-                        sdGameController.countdownPanelCanvas.SetActive (false);
+                        sdGameController.countdownPanelCanvas.SetActive(false);
                     }
                 }
             }
