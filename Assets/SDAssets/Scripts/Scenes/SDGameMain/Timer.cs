@@ -32,7 +32,7 @@ namespace SD {
             timeText.text = "Time: " +time.ToString ();
             sdGameManager = GameManager.getInstance ();
             sdGameController = GameController.getInstance ();
-            sdPersistentData = SDPersistentData.getInstance ();
+            sdPersistentData = SDPersistentData.GetInstance ();
             hasTimerStarted = false;
             maxTime = time;
         }
@@ -71,7 +71,7 @@ namespace SD {
                     panelTimesUp.SetActive (true);
                     sdGameController.setIsGameTimeTicking (false);
                     // Find the audio mixer and ask it to fade out.
-                    StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
+                    FindObjectOfType<MainMixerController>().FadeInAudio();
                     // Fade out the screen.
                     fadeOutAnimator.SetTrigger("FadeOut");
                     StartCoroutine (EndCurrentRound ());

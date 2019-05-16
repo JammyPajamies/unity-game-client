@@ -33,6 +33,7 @@ namespace SD
         public float maxHealth;
         public float maxStamina;
         public float staminaDrainRate;
+        public int stomachSize;
 
         public float minStaminaForBoost;
         public float staminaSpeedBoostFactor;
@@ -64,10 +65,23 @@ namespace SD
         private AudioSource intialBoostAudioSource;
 
         // Animations
+        public bool useAnimations = false;
         public string slowSpeedSwimStateName;
         public string normalSpeedSwimStateName;
         public string fastSpeedSwimStateName;
         private Animator fishAnimator;
+
+        private static PlayerController pc;
+
+        private void Awake()
+        {
+            pc = this;
+        }
+
+        public static PlayerController GetInstance()
+        {
+            return pc;
+        }
 
         // Detects the player object, and reads the 'GameController' Object
         void Start()
@@ -81,11 +95,29 @@ namespace SD
             gameController.SetMaxStamina(maxStamina);
             gameController.SetStaminaDelay(timeBetweenStaminaRecovery);
 
-            fishAnimator = GetComponentInChildren<Animator>();
+            try
+            {
+                fishAnimator = GetComponentInChildren<Animator>();
+            }
+            catch
+            {
+                Debug.Log("No player animator found");
+            }
             intialBoostAudioSource = GetComponent<AudioSource>();
 
             playerModel = transform.Find("Model").gameObject;
-            facingRight = true;
+
+            // If we are player1 aka host, we face to the right.
+            // Otherwise, we face left.
+            if(Constants.PLAYER_NUMBER % 2 == 1)
+            {
+                facingRight = true;
+            }
+            else
+            {
+                facingRight = false;
+            }
+
             isMoving = false;
             canBoost = true;
             isBoosting = false;
@@ -217,18 +249,21 @@ namespace SD
             }
 
             // Handle animation transitions.
-            // Check to make sure the animations exist before calling them.
-            if (fastSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > baseMaxSpeed * 1.25f)
+            // Check to make sure the animations exist before trying to calling them.
+            if(useAnimations)
             {
-                fishAnimator.Play(fastSpeedSwimStateName);
-            }
-            else if (normalSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > currentSpeedLimit * .25f)
-            {
-                fishAnimator.Play(normalSpeedSwimStateName);
-            }
-            else if (slowSpeedSwimStateName.Length > 0 && slowSpeedSwimStateName.Length > 0)
-            {
-                fishAnimator.Play(slowSpeedSwimStateName);
+                if (fastSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > baseMaxSpeed * 1.25f)
+                {
+                    fishAnimator.Play(fastSpeedSwimStateName);
+                }
+                else if (normalSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > currentSpeedLimit * .25f)
+                {
+                    fishAnimator.Play(normalSpeedSwimStateName);
+                }
+                else if (slowSpeedSwimStateName.Length > 0 && slowSpeedSwimStateName.Length > 0)
+                {
+                    fishAnimator.Play(slowSpeedSwimStateName);
+                }
             }
         }
 
@@ -307,6 +342,15 @@ namespace SD
         public float GetCurrentToMaxSpeedRatio()
         {
             return rb.velocity.magnitude / currentSpeedLimit;
+        }
+
+        /// <summary>
+        /// Returns the point carrying capacity of the fish.
+        /// </summary>
+        /// <returns></returns>
+        public int GetStomachSize()
+        {
+            return this.stomachSize;
         }
 
         #endregion

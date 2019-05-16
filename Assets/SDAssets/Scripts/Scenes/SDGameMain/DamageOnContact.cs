@@ -27,7 +27,7 @@ namespace SD
         {
             gameController = GameController.getInstance();
             mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            playerAudioSource = GameObject.FindGameObjectWithTag("Player").GetComponent<AudioSource>();
+            playerAudioSource = PlayerController.GetInstance().gameObject.GetComponent<AudioSource>();
         }
 
         void OnTriggerEnter(Collider other)

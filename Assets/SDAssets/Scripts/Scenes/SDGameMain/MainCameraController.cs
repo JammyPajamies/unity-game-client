@@ -8,26 +8,30 @@
 using UnityEngine;
 using System.Collections;
 
-namespace SD {
-public class MainCameraController : MonoBehaviour {
+namespace SD
+{
+    public class MainCameraController : MonoBehaviour
+    {
 
-    private GameObject player;
-    private Vector3 playerPosition;
-    private Vector3 cameraPosition;
-    private GameObject mainCamera;
+        private Rigidbody player;
+        private Vector3 playerPosition;
+        private Vector3 cameraPosition;
+        private GameObject mainCamera;
 
-    void Start(){
-        mainCamera = GameObject.FindGameObjectWithTag ("MainCamera");
-        playerPosition = GameObject.FindGameObjectWithTag ("Player").transform.position;
-        mainCamera.transform.position = playerPosition;
-        mainCamera.transform.position = new Vector3(0f,0f,-25f);
+        void Start()
+        {
+            mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            player = PlayerController.GetInstance().GetComponent<Rigidbody>();
+            playerPosition = PlayerController.GetInstance().gameObject.GetComponent<Rigidbody>().position;
+            mainCamera.transform.position = playerPosition;
+            mainCamera.transform.position = new Vector3(0f, 0f, -25f);
+        }
+
+        void Update()
+        {
+            mainCamera.transform.position = player.position;
+            cameraPosition = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, -25f);
+            mainCamera.transform.position = cameraPosition;
+        }
     }
-
-    void Update() {
-        playerPosition = GameObject.FindGameObjectWithTag ("Player").transform.position;
-        mainCamera.transform.position = playerPosition;
-        cameraPosition = new Vector3 (mainCamera.transform.position.x, mainCamera.transform.position.y, -25f);
-        mainCamera.transform.position = cameraPosition;
-    }
-}
 }

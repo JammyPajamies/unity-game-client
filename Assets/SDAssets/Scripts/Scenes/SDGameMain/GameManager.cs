@@ -23,8 +23,8 @@ namespace SD {
         }
 
         void Start() {
-            gameController = GameObject.FindGameObjectWithTag ("GameController").GetComponent<GameController>();
-            persistentObject = SDPersistentData.getInstance ();
+            gameController = GameController.getInstance().GetComponent<GameController>();
+            persistentObject = SDPersistentData.GetInstance ();
 
             if (SDMain.networkManager != null) {
                 SDMain.networkManager.Listen (NetworkCode.SD_END_GAME, ResponseSDEndGame);

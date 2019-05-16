@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using UnityEngine.Audio;
 
 namespace SD {
     public class SDPersistentData : MonoBehaviour {
@@ -19,6 +20,9 @@ namespace SD {
         private static SDPersistentData sdPersistentData;
         /*private SDConnectionManager cManager; TODO
         private SDMessageQueue mQueue;*/
+        
+        private static AudioSource audioSource;
+        public AudioMixer mainMixer;
 
         public Animator fadeInAnimator;
 
@@ -46,9 +50,10 @@ namespace SD {
             }
 
             // Find the audio mixer and ask it to fade in.
-            StartCoroutine(FindObjectOfType<MainMixerController>().FadeInAudio());
+            FindObjectOfType<MainMixerController>().FadeInAudio();
             // Finally, fade in the screen.
             fadeInAnimator.SetTrigger("FadeIn");
+            audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         void Update () {
@@ -69,8 +74,21 @@ namespace SD {
             setRoundStartTime (DateTime.UtcNow.ToString());
         }
 
-        public static SDPersistentData getInstance() {
+        public static SDPersistentData GetInstance() {
             return sdPersistentData;
+        }
+
+        // Plays a one-shot audio clip.
+        // TODO: put into audio mixer controller and make that a persistent object instead of using this script.
+        public void PlayOneShot(AudioClip clip)
+        {
+            audioSource.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
+            audioSource.playOnAwake = false;
+            audioSource.volume = 0.5f;
+            audioSource.loop = false;
+            audioSource.clip = clip;
+            audioSource.enabled = true;
+            audioSource.PlayOneShot(clip);
         }
 
         public void setPlayerFinalScore(int score) {
