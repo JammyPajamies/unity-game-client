@@ -52,7 +52,7 @@ namespace SD
         {
             ResponseSDStartGame response = r as ResponseSDStartGame;
             Debug.Log("ResponseSDStartGame called.");
-            SDPersistentData.getInstance().setRoundStartTime(response.startDateTime);
+            SDPersistentData.GetInstance().setRoundStartTime(response.startDateTime);
             if (response.status == 0)
             {
                 // Send a request to the opponent indicating that this client is ready to play.
@@ -149,7 +149,7 @@ namespace SD
         /// <returns></returns>
         private IEnumerator MainGameTransition()
         {
-            StartCoroutine(FindObjectOfType<MainMixerController>().FadeOutAudio());
+            FindObjectOfType<MainMixerController>().FadeOutAudio(2f);
             fadeOutAnimator.SetTrigger("FadeOut");
             yield return new WaitForSeconds(FindObjectOfType<MainMixerController>().fadeTime);
 

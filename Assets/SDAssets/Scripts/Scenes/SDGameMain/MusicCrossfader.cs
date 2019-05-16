@@ -23,6 +23,10 @@ namespace SD
         // The max volume of the sound clip.
         public float maxVolume = 0.5f;
 
+        // What mechanic will we use to transition, absolute count or a ratio?
+        public bool absoluteValueTransition = true;
+        public int valuePerTransition = 20;
+
         // This is the number of transitions that will be played between 
         private int transitionCount;
         // This is the count of tranistions completed.
@@ -31,10 +35,12 @@ namespace SD
         private bool[] transitionsStarted;
 
         // This is the ratio (step) of each transition.
-        private float ratioThresholdPerTransition;
+        private float valueOrRatioPerTransition;
 
         // Hold a reference to the object that we will be querying to get our updated transition ratios.
         private Timer ratioScalingSource;
+
+        private GameController player;
 
         private void Start()
         {
@@ -48,9 +54,17 @@ namespace SD
                 transitionsStarted[i] = false;
             }
 
-            // Setup the ratio to compare against for transitions.
-            ratioThresholdPerTransition = 1.0f / audioTracks.Count;
-            Debug.Log("TransitionRatio: " + ratioThresholdPerTransition);
+            if(absoluteValueTransition)
+            {
+                // Setup the transition absolute values.
+                valueOrRatioPerTransition = valuePerTransition;
+            }
+            else
+            {
+                // Setup the ratio to compare against for transitions.
+                valueOrRatioPerTransition = 1.0f / audioTracks.Count;
+                //Debug.Log("TransitionRatio: " + valueOrRatioPerTransition);
+            }
 
             // Now, have the audio players start playing music,
             // but reduce the volume of all of the but the first one.
@@ -78,6 +92,7 @@ namespace SD
                 // If the audio player isn't the first one (playing the first track),
                 // then reduce its volume to 0.
             }
+            player = FindObjectOfType<GameController>();
 
             // Get a reference to the object that we will be using.
             ratioScalingSource = FindObjectOfType<Timer>();
@@ -85,34 +100,31 @@ namespace SD
 
         void Update()
         {
-            // Old method using the number of fish consumed.
-            // Later fourn to be inconsistent with multiplayer
-            // where the host player is infinitely spawning fish (up to a cap).
-            /*
-            int preyFishTotal = gameController.GetPreyFishTotal();
-            int preyFishRemaining = gameController.GetPreyFishRemaining();
-            float fishConsumedRatio = 1.0f - (float)preyFishRemaining / (float)preyFishTotal;
-            int transitionIndexID = Mathf.FloorToInt(fishConsumedRatio / ratioThresholdPerTransition) - 1;
-            */
-
-            //Debug.Log("Remaining/total fish: " + preyFishRemaining + "/" + preyFishTotal + " Ratio: " + fishConsumedRatio);
-
-            // Current implementation uses the time in the game and splits it evenly into chunks for calculations.
-            float remainingUnits = ratioScalingSource.GetTimeRemaining();
-            float currentRatio = 1.0f - remainingUnits / ratioScalingSource.GetMaxTimeInGame();
-
-            //Debug.Log("Time remaining: " + remainingUnits + "/" + ratioScalingSource.GetMaxTimeInGame() + "  current/thresh:" + currentRatio / ratioThresholdPerTransition);
-
-            // This variable is initally -1 at the start of the game
-            // and goes up in steps of 1 up to the max number of sound tracks.
-            int transitionIndexID = Mathf.FloorToInt(currentRatio / ratioThresholdPerTransition) - 1;
+            int transitionIndexID;
+            if (absoluteValueTransition)
+            {
+                // Using the number of fish consumed.
+                int currentAbsoluteValue = player.GetPreyFishConsumed();
+                transitionIndexID = Mathf.FloorToInt(currentAbsoluteValue / valueOrRatioPerTransition) - 1;
+                //Debug.Log(currentAbsoluteValue / valueOrRatioPerTransition + " " + transitionIndexID);
+            }
+            else
+            {
+                // Current implementation uses the time in the game and splits it evenly into chunks for calculations.
+                float remainingUnits = ratioScalingSource.GetTimeRemaining();
+                float currentRatio = 1.0f - remainingUnits / ratioScalingSource.GetMaxTimeInGame();
+                //Debug.Log("Time remaining: " + remainingUnits + "/" + ratioScalingSource.GetMaxTimeInGame() + "  current/thresh:" + currentRatio / ratioThresholdPerTransition);
+                // This variable is initally -1 at the start of the game
+                // and goes up in steps of 1 up to the max number of sound tracks.
+                transitionIndexID = Mathf.FloorToInt(currentRatio / valueOrRatioPerTransition) - 1;
+            }
 
             // If we have a ratio bigger than the ratio that would trigger a transition,
             // check if we need to start a transition.
             if (transitionIndexID >= 0 && transitionIndexID < transitionCount && !transitionsStarted[transitionIndexID])
             {
                 // Get the transition that we would be doing given the ratios.
-                Debug.Log("TransitionID: " + transitionIndexID);
+                //Debug.Log("TransitionID: " + transitionIndexID);
 
                 // Now check to see if we have started a transition given the ID.
                 // Start it if we haven't.
@@ -137,7 +149,7 @@ namespace SD
         /// <returns></returns>
         private IEnumerator AudioCrossfade(int transitionIndex)
         {
-            Debug.Log("AudioCrossfade async called.");
+            Debug.Log("AudioCrossfade called. Transitioning to new track.");
 
             bool transitionTimeElapsed = false;
             float fadeTimeRemaining = 0.0f;

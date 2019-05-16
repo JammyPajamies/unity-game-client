@@ -10,19 +10,47 @@ namespace SD {
         private Text txtScore;
         private Text txtOpponentScore;
 
+        // Audio mixer for fade in of sound.
+        private MainMixerController mainMixer;
+        private AudioSource audioPlayer;
+        public AudioClip clip;
+        // The fade in and out transitions for the scene.
+        public Animator fadeInAnimator;
+
         // Use this for initialization
-        void Start () {
+        void Start ()
+        {
+            // Fade in the screen.
+            fadeInAnimator.SetTrigger("FadeIn");
+
+            mainMixer = MainMixerController.GetInstance();
+            mainMixer.FadeInAudio();
+
+            audioPlayer = gameObject.AddComponent<AudioSource>();
+            audioPlayer.outputAudioMixerGroup = mainMixer.GetMainMixer().FindMatchingGroups("Master")[0];
+            audioPlayer.playOnAwake = true;
+            audioPlayer.loop = true;
+            audioPlayer.volume = 0.5f;
+            audioPlayer.clip = clip;
+
             txtResult = GameObject.Find ("TxtResult").GetComponent<Text> ();
             txtScore = GameObject.Find ("TxtScore").GetComponent<Text> ();
             txtOpponentScore = GameObject.Find ("TxtOpponentScore").GetComponent<Text> ();
+
             displayResult ();
             Constants.PLAYER_NUMBER = 0;
+
+            audioPlayer.Play();
         }
 
         void displayResult() {
-            persistentObject = SDPersistentData.getInstance ();
+            persistentObject = SDPersistentData.GetInstance ();
             int finalScore = 0;
-            int opponentScore = GameController.getInstance().getOpponentScore();
+            int opponentScore = 0;
+            if (GameController.getInstance() != null)
+            {
+                opponentScore = GameController.getInstance().getOpponentScore();
+            }
             int winningScore = 0;
             int gameResult = 0;
             string result = null;

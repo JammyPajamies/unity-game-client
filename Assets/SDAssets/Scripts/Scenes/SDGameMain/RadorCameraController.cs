@@ -17,7 +17,7 @@ namespace SD {
         }
 
         void Update() {
-            playerPosition = GameObject.FindGameObjectWithTag ("Player").transform.position;
+            playerPosition = PlayerController.GetInstance().gameObject.transform.position;
             mainCamera.transform.position = playerPosition;
             cameraPosition = new Vector3 (mainCamera.transform.position.x, mainCamera.transform.position.y, -35f);
             mainCamera.transform.position = cameraPosition;

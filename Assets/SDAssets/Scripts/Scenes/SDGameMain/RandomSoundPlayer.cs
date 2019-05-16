@@ -18,13 +18,7 @@ namespace SD
         {
             Random.InitState(System.DateTime.Now.Millisecond);
 
-            playerAudioSource = GameObject.FindGameObjectWithTag("Player").GetComponent<AudioSource>();
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
+            playerAudioSource = PlayerController.GetInstance().gameObject.GetComponent<AudioSource>();
         }
 
         // Play a random sound from one of the lists.
@@ -49,8 +43,6 @@ namespace SD
                             playerAudioSource.PlayOneShot(listOfClipsOne[randomClip]);
                             soundPlayed = true;
 
-                            Debug.Log("Playedclip #" + randomClip + " from list #" + randomList);
-
                             break;
                         }
                     case 1:
@@ -61,8 +53,6 @@ namespace SD
                             randomClip = Random.Range(0, listOfClipsTwo.Count);
                             playerAudioSource.PlayOneShot(listOfClipsTwo[randomClip]);
                             soundPlayed = true;
-
-                            Debug.Log("Playedclip #" + randomClip + " from list #" + randomList);
                             
                             break;
                         }
@@ -74,15 +64,15 @@ namespace SD
                             randomClip = Random.Range(0, listOfClipsThree.Count);
                             playerAudioSource.PlayOneShot(listOfClipsThree[randomClip]);
                             soundPlayed = true;
-
-                            Debug.Log("Playedclip #" + randomClip + " from list #" + randomList);
-
+                            
                             break;
                         }
                     default:
                         break;
                 }
             }
+
+            //Debug.Log("Playedclip #" + randomClip + " from list #" + randomList);
         }
     }
 }

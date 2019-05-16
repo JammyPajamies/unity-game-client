@@ -30,22 +30,21 @@ namespace SD
 
         // Use this for initialization
         void Start()
-        {
-            playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-
+        { 
             audioPlayer = gameObject.AddComponent<AudioSource>();
             audioPlayer.outputAudioMixerGroup = mainMixer.FindMatchingGroups("Master")[0];
             audioPlayer.playOnAwake = true;
             audioPlayer.loop = true;
             audioPlayer.clip = swimmingSFX;
             audioPlayer.Play();
-
-            trails = GetComponentsInChildren<TrailRenderer>();
         }
 
         // Update is called once per frame
         void FixedUpdate()
         {
+            //playerController = PlayerController.GetInstance().gameObject.GetComponent<PlayerController>();
+            playerController = PlayerController.GetInstance();
+            trails = GetComponentsInChildren<TrailRenderer>();
             // Get and clamp the ratio of currentSpeed/max
             alphaRatio = Mathf.Clamp(playerController.GetCurrentToMaxSpeedRatio(), 0, maxTrailAlpha);
             swimSFXRatio = Mathf.Clamp(playerController.GetCurrentToMaxSpeedRatio(), 0, maxSwimmingSFXVolume);
