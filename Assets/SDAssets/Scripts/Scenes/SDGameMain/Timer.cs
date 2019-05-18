@@ -59,7 +59,7 @@ namespace SD {
                             secondsToGo = (offsetDateTime - TrimMilliseconds(DateTime.UtcNow)).TotalSeconds;
                         }
                         countdownText.GetComponent<Text>().text = secondsToGo.ToString();
-                        Debug.Log("countdowntext updated to " + secondsToGo.ToString());
+                        //Debug.Log("countdowntext updated to " + secondsToGo.ToString());
                     }
                     else
                     {

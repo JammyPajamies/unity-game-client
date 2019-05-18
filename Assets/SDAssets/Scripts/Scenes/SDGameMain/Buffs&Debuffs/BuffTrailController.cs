@@ -28,10 +28,8 @@ namespace SD
         void FixedUpdate()
         {
             //speed power-up
-            if (!areTrailsOn && gameController.getSpeedBoostStatus() == true)
+            if (gameController.getSpeedBoostStatus() == true)
             {
-                areTrailsOn = true;
-
                 // Get trails and enable them.
                 foreach (TrailRenderer trail in buffTrails)
                 {
@@ -40,8 +38,6 @@ namespace SD
                         trail.enabled = true;
                     }
                 }
-                
-                areTrailsOn = false;
             }
             else if (gameController.getSpeedBoostStatus() == false)
             {

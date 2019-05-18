@@ -44,7 +44,7 @@ namespace SD
             if (other.gameObject.tag == "SpeedBuffFish")
             {
                 // Add a stack of the buff, get the recalculated buff results.
-                player.SetCurrentSpeed(ApplyBuff());
+                player.SetBuffAdjustedSpeedLimit(ApplyBuff());
                 gameController.SetIsSpeedBuffActive(true);
             }
         }
@@ -53,7 +53,16 @@ namespace SD
         {
             // Update the player's base speed and inform the game controller of
             // player's speed boost buff state.
-            player.SetCurrentSpeed(GetAdjustedStatAmount()); 
+            if (Mathf.Abs(GetAdjustedStatAmount() - GetBaseStat()) > 0.1f)
+            {
+                player.SetBuffAdjustedSpeedLimit(GetAdjustedStatAmount());
+            }
+            else if(needToResetBaseStat)
+            {
+                player.SetBuffAdjustedSpeedLimit(GetAdjustedStatAmount());
+                needToResetBaseStat = false;
+                gameController.SetIsSpeedBuffActive(false);
+            }
         }
     }
 }

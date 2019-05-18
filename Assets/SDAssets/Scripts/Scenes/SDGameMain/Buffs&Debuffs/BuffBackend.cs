@@ -38,6 +38,7 @@ namespace SD
         // The end time and max duration of the buff.
         private float buffEndTime = 0.0f;
         private float maxBuffDuration = 0.0f;
+        protected bool needToResetBaseStat = false;
 
         // Optional use audio source for buff pickup sounds.
         public AudioClip buffSound = null;
@@ -60,7 +61,9 @@ namespace SD
             if (Time.timeSinceLevelLoad > buffEndTime)
             {
                 adjustedStat = baseStat;
-                currentBuffBonus = initialBuffBonus;                
+                currentBuffBonus = initialBuffBonus;
+                needToResetBaseStat = buffStackAmount > 0 ? true : false;
+                buffStackAmount = 0;
             }
         }
 
@@ -115,6 +118,7 @@ namespace SD
 
             // Update the end time of the buff, even if we can't add any more stacks.
             buffEndTime = Time.timeSinceLevelLoad + maxBuffDuration;
+            // Debug.Log("times: now/end " + Time.timeSinceLevelLoad + "/" + buffEndTime);
 
             // Finally, return the adjusted stat value.
             return adjustedStat;
@@ -130,6 +134,14 @@ namespace SD
         public float GetAdjustedStatAmount()
         {
             return adjustedStat;
+        }
+
+        /// <summary>
+        ///  Returns the base stat of this buff.
+        /// </summary>
+        public float GetBaseStat()
+        {
+            return this.baseStat;
         }
 
         /// <summary>

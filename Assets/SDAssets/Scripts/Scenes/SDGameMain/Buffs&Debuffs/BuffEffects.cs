@@ -65,7 +65,6 @@ namespace SD
                 //returns player model color back to original
                 //sets power-up status to false
                 meshRenderer.material.SetColor("_Color", Color.white);
-                gameController.SetIsSpeedBuffActive(false);
             }
 
             //point power-up
@@ -80,7 +79,6 @@ namespace SD
                 //returns player model color back to original
                 //sets power-up status to false
                 meshRenderer.material.SetColor("_Color", Color.white);
-                gameController.SetIsPointBuffActive(false);
             }
 
             //evasion power-up
@@ -95,7 +93,6 @@ namespace SD
                 //returns player model color back to original
                 //sets power-up status to false
                 meshRenderer.material.SetColor("_Color", Color.white);
-                gameController.SetIsEvasionBuffActive(false);
             }
 
             //slow down
@@ -110,7 +107,6 @@ namespace SD
                 //returns player model color back to original
                 //sets power-up status to false
                 meshRenderer.material.SetColor("_Color", Color.white);
-                gameController.SetIsSlowDownActive(false);
             }
         }
 

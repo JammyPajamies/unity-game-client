@@ -82,6 +82,10 @@ namespace SD
         /// <returns></returns>
         public IEnumerator FadeInAudioAsync()
         {
+            if (asyncFadeOut != null)
+            {
+                StopCoroutine(asyncFadeOut);
+            }
             float fadeTimeRemaining = 0.0f;
             float fadeTimeForThisFade = fadeTime;
 
@@ -125,6 +129,10 @@ namespace SD
         /// <returns></returns>
         public IEnumerator FadeOutAudioAsync()
         {
+            if (asyncFadeIn != null)
+            {
+                StopCoroutine(asyncFadeIn);
+            }
             float fadeTimeRemaining = 0.0f;
             float fadeTimeForThisFade = fadeTime;
             float startVolume;

@@ -23,7 +23,7 @@ namespace SD
         public Boundary boundary;
 
         public float forwardAcceleration;
-        public float baseMaxSpeed;
+        public float baseSpeed;
         public float absoluteMaxSpeedLimit;
 
         public float maxRotationSpeed;
@@ -59,6 +59,7 @@ namespace SD
         private bool canBoost;
         private bool isBoosting;
         private bool justStartedBoosting;
+        private float buffAdjustedSpeedLimit;
         public float currentSpeedLimit;
         
         // Audio
@@ -87,7 +88,7 @@ namespace SD
         void Start()
         {
             rb = GetComponent<Rigidbody>();
-            currentSpeedLimit = baseMaxSpeed;
+            currentSpeedLimit = buffAdjustedSpeedLimit = baseSpeed;
 
             sdGameManager = SD.GameManager.getInstance();
             gameController = GameController.getInstance();
@@ -137,6 +138,9 @@ namespace SD
                     canBoost = true;
                 }
 
+                currentSpeedLimit = (Mathf.Abs(buffAdjustedSpeedLimit - baseSpeed) > 0.1f) ? buffAdjustedSpeedLimit : baseSpeed;
+
+
                 // Give the player a speed boost via max speed increase if they hold space and have the stamina for it.
                 if (Input.GetKey(KeyCode.Space) && canBoost && currentStamina > 0.0f)
                 {
@@ -149,7 +153,7 @@ namespace SD
                     }
                     else
                     {
-                        currentSpeedLimit = baseMaxSpeed * staminaSpeedBoostFactor;
+                        currentSpeedLimit = buffAdjustedSpeedLimit * staminaSpeedBoostFactor;
 
                         if (currentSpeedLimit > absoluteMaxSpeedLimit)
                         {
@@ -166,7 +170,6 @@ namespace SD
                 }
                 else
                 {
-                    currentSpeedLimit = baseMaxSpeed;
                     isBoosting = false;
                     justStartedBoosting = false;
                 }
@@ -252,7 +255,7 @@ namespace SD
             // Check to make sure the animations exist before trying to calling them.
             if(useAnimations)
             {
-                if (fastSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > baseMaxSpeed * 1.25f)
+                if (fastSpeedSwimStateName.Length > 0 && rb.velocity.magnitude > baseSpeed * 1.25f)
                 {
                     fishAnimator.Play(fastSpeedSwimStateName);
                 }
@@ -305,16 +308,16 @@ namespace SD
         /// <returns></returns>
         public float GetBaseSpeed()
         {
-            return baseMaxSpeed;
+            return baseSpeed;
         }
 
         /// <summary>
         /// Sets the base max speed of the player.
         /// </summary>
         /// <param name="newSpeedLimit"></param>
-        public void SetCurrentSpeed(float newSpeedLimit)
+        public void SetBuffAdjustedSpeedLimit(float newSpeedLimit)
         {
-            baseMaxSpeed = newSpeedLimit;
+            buffAdjustedSpeedLimit = newSpeedLimit;
         }
 
         /// <summary>
@@ -327,12 +330,21 @@ namespace SD
         }
 
         /// <summary>
-        /// Returns the current veolcity of the player.
+        /// Returns the current velocity of the player.
         /// </summary>
         /// <returns></returns>
         public float GetCurrentSpeed()
         {
             return rb.velocity.magnitude;
+        }
+
+        /// <summary>
+        /// Returns the current speed limit.
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentSpeedLimit()
+        {
+            return this.currentSpeedLimit;
         }
 
         /// <summary>

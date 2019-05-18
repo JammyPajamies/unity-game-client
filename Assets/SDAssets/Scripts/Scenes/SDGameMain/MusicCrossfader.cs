@@ -149,7 +149,6 @@ namespace SD
         /// <returns></returns>
         private IEnumerator AudioCrossfade(int transitionIndex)
         {
-            Debug.Log("AudioCrossfade called. Transitioning to new track.");
 
             bool transitionTimeElapsed = false;
             float fadeTimeRemaining = 0.0f;
@@ -195,6 +194,7 @@ namespace SD
 
             // Finally, flag this transition as completed.
             numTransitionscompleted++;
+            Debug.Log("AudioCrossfade finished initializing. Now executing transition #" + numTransitionscompleted);
 
             //Debug.Log("AudioCrossfade async complete.");
             yield return null;
